@@ -23,11 +23,9 @@ namespace MG3TR
           m_local_rotation(QuaternionConstants::k_identity),
           m_local_scale(Vector3Constants::k_one),
           m_parent(),
-          m_game_object(nullptr)
+          m_game_object(nullptr),
+          m_uid(s_uid_generator.GetNextUID())
     {
-        m_uid = s_number_of_instances;
-        ++s_number_of_instances;
-
         UpdateLocalToWorldAndWorldToLocalVariables();
     }
 

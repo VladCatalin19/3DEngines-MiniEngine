@@ -4,6 +4,7 @@
 #include <Components/Component.hpp>
 #include <Scripting/Transform.hpp>
 #include <Scene/IJsonSerializeable.hpp>
+#include <Utils/UIDGenerator.hpp>
 
 #include <cstddef>              // std::size_t
 #include <memory>               // std::enable_shared_from_this, std::shared_ptr, std::weak_ptr
@@ -19,11 +20,9 @@ namespace MG3TR
         std::weak_ptr<Transform> m_transform;
         std::vector<std::shared_ptr<Component>> m_components;
 
-        static inline TUID s_number_of_instances = 0;
+        static inline UIDGenerator s_uid_generator;
         TUID m_uid;
 
-
-    private:
         GameObject(const std::string &name);
 
     public:
@@ -44,8 +43,6 @@ namespace MG3TR
 
         std::weak_ptr<Transform> GetTransform() const noexcept { return m_transform; }
         void SetTransform(const std::shared_ptr<Transform> &transform) { m_transform = transform; }
-
-    public:
 
         std::vector<std::shared_ptr<Component>>& GetComponents() noexcept { return m_components; }
         const std::vector<std::shared_ptr<Component>>& GetComponents() const noexcept { return m_components; }

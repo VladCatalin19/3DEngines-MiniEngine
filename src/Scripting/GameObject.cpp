@@ -21,11 +21,9 @@
 namespace MG3TR
 {
     GameObject::GameObject(const std::string &name)
-        : m_name(name)
-    {
-        m_uid = s_number_of_instances;
-        ++s_number_of_instances;
-    }
+        : m_name(name),
+          m_uid(s_uid_generator.GetNextUID())
+    {}
 
     [[nodiscard]] std::shared_ptr<GameObject> GameObject::Create(const std::string &name) try
     {

@@ -1,7 +1,6 @@
 #ifndef MG3TR_SRC_SCRIPTING_TRANSFORM_HPP_INCLUDED
 #define MG3TR_SRC_SCRIPTING_TRANSFORM_HPP_INCLUDED
 
-#include <Components/Component.hpp>
 #include <Math/Matrix4x4.hpp>
 #include <Math/Quaternion.hpp>
 #include <Math/Vector3.hpp>
@@ -9,6 +8,7 @@
 #include <Constants/MathConstants.hpp>
 
 #include <Scene/IJsonSerializeable.hpp>
+#include <Utils/UIDGenerator.hpp>
 
 #include <cstdint>              // std::uint32_t
 #include <cstddef>              // std::size_t
@@ -40,10 +40,9 @@ namespace MG3TR
 
         std::shared_ptr<GameObject> m_game_object;
 
-        static inline TUID s_number_of_instances = 0;
+        static inline UIDGenerator s_uid_generator;
         TUID m_uid;
 
-    private:
         Transform() noexcept;
 
     public:
