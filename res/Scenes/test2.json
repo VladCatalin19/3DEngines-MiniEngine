@@ -1,0 +1,412 @@
+{
+    "transform": {
+        "children": [
+            {
+                "transform": {
+                    "game object": {
+                        "components": [
+                            {
+                                "camera": {
+                                    "aspect ratio": 1.3333333730697632,
+                                    "camera mode": 0,
+                                    "fov": 1.5707963705062866,
+                                    "uid": 0,
+                                    "xmax": 9.401847253687956e-38,
+                                    "xmin": 3.0968696061578457e-41,
+                                    "ymax": 9.401865190308299e-38,
+                                    "ymin": 3.0968696061578457e-41,
+                                    "zfar": 300.0,
+                                    "znear": 0.0010000000474974513
+                                }
+                            },
+                            {
+                                "camera controller": {
+                                    "move speed": 5.0,
+                                    "run speed": 12.0,
+                                    "uid": 1,
+                                    "walk speed": 2.0
+                                }
+                            }
+                        ],
+                        "name": "Camera",
+                        "uid": 0
+                    },
+                    "local position": [
+                        0.0,
+                        3.0,
+                        -5.0
+                    ],
+                    "local rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "local scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "uid": 1
+                }
+            },
+            {
+                "transform": {
+                    "children": [
+                        {
+                            "transform": {
+                                "game object": {
+                                    "components": [
+                                        {
+                                            "test movement": {
+                                                "uid": 5
+                                            }
+                                        },
+                                        {
+                                            "mesh renderer": {
+                                                "camera uid": 0,
+                                                "mesh": {
+                                                    "path to file": "res/Models/Cube/cube.obj"
+                                                },
+                                                "shader": {
+                                                    "fragment normal shader": {
+                                                        "camera uid": 0,
+                                                        "object transform uid": 3
+                                                    }
+                                                },
+                                                "uid": 4,
+                                                "use frustum culling": true
+                                            }
+                                        }
+                                    ],
+                                    "name": "Second Rotating Cube",
+                                    "uid": 2
+                                },
+                                "local position": [
+                                    -0.21427686512470245,
+                                    1.4643077850341797,
+                                    0.0
+                                ],
+                                "local rotation": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "local scale": [
+                                    0.25,
+                                    0.25,
+                                    0.25
+                                ],
+                                "uid": 3
+                            }
+                        }
+                    ],
+                    "game object": {
+                        "components": [
+                            {
+                                "mesh renderer": {
+                                    "camera uid": 0,
+                                    "mesh": {
+                                        "path to file": "res/Models/Cube/cube.obj"
+                                    },
+                                    "shader": {
+                                        "fragment normal shader": {
+                                            "camera uid": 0,
+                                            "object transform uid": 2
+                                        }
+                                    },
+                                    "uid": 2,
+                                    "use frustum culling": true
+                                }
+                            },
+                            {
+                                "test rotation": {
+                                    "uid": 3
+                                }
+                            }
+                        ],
+                        "name": "Rotating Cube",
+                        "uid": 1
+                    },
+                    "local position": [
+                        1.0,
+                        9.0,
+                        1.0
+                    ],
+                    "local rotation": [
+                        -0.8762674331665039,
+                        0.0,
+                        0.4818239212036133,
+                        0.0
+                    ],
+                    "local scale": [
+                        2.0,
+                        2.0,
+                        2.0
+                    ],
+                    "uid": 2
+                }
+            },
+            {
+                "transform": {
+                    "children": [
+                        {
+                            "transform": {
+                                "game object": {
+                                    "components": [
+                                        {
+                                            "mesh renderer": {
+                                                "camera uid": 0,
+                                                "mesh": {
+                                                    "path to file": "res/Models/Sphere/sphere.obj"
+                                                },
+                                                "shader": {
+                                                    "fragment normal shader": {
+                                                        "camera uid": 0,
+                                                        "object transform uid": 5
+                                                    }
+                                                },
+                                                "uid": 7,
+                                                "use frustum culling": true
+                                            }
+                                        }
+                                    ],
+                                    "name": "Sphere",
+                                    "uid": 4
+                                },
+                                "local position": [
+                                    0.0,
+                                    0.0,
+                                    -1.0272175643422088e-07
+                                ],
+                                "local rotation": [
+                                    1.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ],
+                                "local scale": [
+                                    0.3775981366634369,
+                                    0.3775981366634369,
+                                    0.3775981366634369
+                                ],
+                                "uid": 5
+                            }
+                        }
+                    ],
+                    "game object": {
+                        "components": [
+                            {
+                                "mesh renderer": {
+                                    "camera uid": 0,
+                                    "mesh": {
+                                        "path to file": "res/Models/Creeper/creeper.obj"
+                                    },
+                                    "shader": {
+                                        "texture and lighting shader": {
+                                            "camera uid": 0,
+                                            "light position": [
+                                                1000.0,
+                                                1000.0,
+                                                1000.0
+                                            ],
+                                            "object transform uid": 4,
+                                            "texture path": "res/Models/Creeper/creeper.png"
+                                        }
+                                    },
+                                    "uid": 6,
+                                    "use frustum culling": true
+                                }
+                            }
+                        ],
+                        "name": "Creeper",
+                        "uid": 3
+                    },
+                    "local position": [
+                        2.3499999046325684,
+                        4.849999904632568,
+                        5.300000190734863
+                    ],
+                    "local rotation": [
+                        -4.371138828673793e-08,
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "local scale": [
+                        2.0,
+                        2.0,
+                        2.0
+                    ],
+                    "uid": 4
+                }
+            },
+            {
+                "transform": {
+                    "game object": {
+                        "components": [
+                            {
+                                "mesh renderer": {
+                                    "camera uid": 0,
+                                    "mesh": {
+                                        "path to file": "res/Models/MinecraftScene/Mineways2Skfb.obj"
+                                    },
+                                    "shader": {
+                                        "texture and lighting shader": {
+                                            "camera uid": 0,
+                                            "light position": [
+                                                1000.0,
+                                                1000.0,
+                                                1000.0
+                                            ],
+                                            "object transform uid": 6,
+                                            "texture path": "res/Models/MinecraftScene/Mineways2Skfb-RGBA.png"
+                                        }
+                                    },
+                                    "uid": 8,
+                                    "use frustum culling": true
+                                }
+                            }
+                        ],
+                        "name": "Map",
+                        "uid": 5
+                    },
+                    "local position": [
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "local rotation": [
+                        0.7071067690849304,
+                        0.0,
+                        0.7071067690849304,
+                        0.0
+                    ],
+                    "local scale": [
+                        30.0,
+                        30.0,
+                        30.0
+                    ],
+                    "uid": 6
+                }
+            },
+            {
+                "transform": {
+                    "game object": {
+                        "components": [
+                            {
+                                "mesh renderer": {
+                                    "camera uid": 0,
+                                    "mesh": {
+                                        "path to file": "res/Models/Skybox/skybox.obj"
+                                    },
+                                    "shader": {
+                                        "texture shader": {
+                                            "camera uid": 0,
+                                            "object transform uid": 7,
+                                            "texture path": "res/Models/Skybox/skybox.png"
+                                        }
+                                    },
+                                    "uid": 9,
+                                    "use frustum culling": false
+                                }
+                            },
+                            {
+                                "skybox follow camera": {
+                                    "camera uid": 1,
+                                    "uid": 10
+                                }
+                            }
+                        ],
+                        "name": "Skybox",
+                        "uid": 6
+                    },
+                    "local position": [
+                        0.0,
+                        3.0,
+                        -5.0
+                    ],
+                    "local rotation": [
+                        -4.371138828673793e-08,
+                        0.0,
+                        1.0,
+                        0.0
+                    ],
+                    "local scale": [
+                        150.0,
+                        150.0,
+                        150.0
+                    ],
+                    "uid": 7
+                }
+            },
+            {
+                "transform": {
+                    "game object": {
+                        "components": [
+                            {
+                                "mesh renderer": {
+                                    "camera uid": 0,
+                                    "mesh": {
+                                        "path to file": "res/Models/Sphere/sphere.obj"
+                                    },
+                                    "shader": {
+                                        "texture and lighting shader": {
+                                            "camera uid": 0,
+                                            "light position": [
+                                                1000.0,
+                                                1000.0,
+                                                1000.0
+                                            ],
+                                            "object transform uid": 8,
+                                            "texture path": "res/Models/Sphere/planet.png"
+                                        }
+                                    },
+                                    "uid": 11,
+                                    "use frustum culling": true
+                                }
+                            }
+                        ],
+                        "name": "Planet",
+                        "uid": 7
+                    },
+                    "local position": [
+                        10.0,
+                        10.0,
+                        0.0
+                    ],
+                    "local rotation": [
+                        1.0,
+                        0.0,
+                        0.0,
+                        0.0
+                    ],
+                    "local scale": [
+                        1.0,
+                        1.0,
+                        1.0
+                    ],
+                    "uid": 8
+                }
+            }
+        ],
+        "local position": [
+            0.0,
+            0.0,
+            0.0
+        ],
+        "local rotation": [
+            1.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "local scale": [
+            1.0,
+            1.0,
+            1.0
+        ],
+        "uid": 0
+    }
+}

@@ -1,0 +1,24 @@
+{
+   ignore_nvidia_driver_errors
+   Memcheck:Leak
+   ...
+   obj:*/libnvidia-glcore.so.*
+}
+{
+   ignore_X11_errors
+   Memcheck:Leak
+   ...
+   obj:*/libX11.so.*
+}
+{
+   ignore_glfw_errors
+   Memcheck:Leak
+   ...
+   obj:*/libglfw.so.*
+}
+{
+   ignore_dl_errors
+   Memcheck:Leak
+   ...
+   obj:*/libdl*.so
+}
