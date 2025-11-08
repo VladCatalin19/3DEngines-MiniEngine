@@ -1,14 +1,12 @@
 
-#include <glm/glm.hpp>                          // glm::tvec3, std::numeric_limits, glm::cross, glm::distance,
-                                                // glm::dot, glm::faceforward, glm::mix, glm::length,
-                                                // glm::normalize, glm::reflect, glm::refract
-#include <glm/gtc/type_ptr.hpp>                 // glm::value_ptr
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <Utils/CatchAndRethrowExceptions.hpp>
 
-#include <memory>               // std::move
-#include <ostream>              // std::ostream
-#include <stdexcept>            // std::out_of_range
-#include <string>               // std::string, std::to_string
+#include <memory>
+#include <ostream>
+#include <stdexcept>
+#include <string>
 
 namespace MG3TR
 {
@@ -198,7 +196,7 @@ namespace MG3TR
                                                                  const TVector3<TInternalType> &normal,
                                                                  const TVector3 &normal_ref) noexcept
     {
-        return TVector3<TInternalType>(glm::faceforward(in.m_vec3, normal.m_vec3, normal_ref.vec3));
+        return TVector3<TInternalType>(glm::faceforward(in.m_vec3, normal.m_vec3, normal_ref.m_vec3));
     }
 
     template<typename TInternalType>
