@@ -13,20 +13,20 @@ namespace MG3TR
         float m_radius;
 
     public:
-        Sphere() noexcept = default;
+        Sphere() = default;
+        Sphere(const Vector3& center, const float radius);
+        ~Sphere() = default;
 
-        Sphere(Vector3 center, float radius) noexcept
-            : m_center(center),
-              m_radius(radius)
-        {}
+        Sphere(const Sphere&) = default;
+        Sphere(Sphere&&) = default;
+        
+        Sphere& operator=(const Sphere&) = default;
+        Sphere& operator=(Sphere&&) = default;
 
-        Vector3 GetCenter() const noexcept { return m_center; }
-        float GetRadius() const noexcept { return m_radius; }
+        Vector3 GetCenter() const;
+        float GetRadius() const;
 
-        bool IsOnOrInFrontOfPlane(const Plane &plane) const noexcept
-        {
-            return plane.GetSignedDistance(m_center) > -m_radius;
-        }
+        bool IsOnOrInFrontOfPlane(const Plane& plane) const;
     };
 }
 

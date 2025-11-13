@@ -7,8 +7,8 @@
 #include <Math/Vector3.hpp>
 #include <Scene/IJsonSerializeable.hpp>
 
-#include <string>               // std::string
-#include <vector>               // std::vector
+#include <string>
+#include <vector>
 
 namespace MG3TR
 {
@@ -28,16 +28,16 @@ namespace MG3TR
 
         Mesh(const std::string &path_to_file);
 
-        virtual ~Mesh() noexcept = default;
+        virtual ~Mesh() = default;
 
         Mesh(const Mesh &);
+        Mesh(Mesh &&) = default;
+        
         Mesh& operator=(const Mesh &);
-
-        Mesh(Mesh &&) noexcept = default;
         Mesh& operator=(Mesh &&);
 
-        const std::vector<SubMesh>& GetSubmeshes() const noexcept { return m_submeshes; }
-        const std::vector<Material>& GetMaterials() const noexcept { return m_materials; }
+        const std::vector<SubMesh>& GetSubmeshes() const;
+        const std::vector<Material>& GetMaterials() const;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;

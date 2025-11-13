@@ -1,16 +1,12 @@
 #include "SubMesh.hpp"
 
 #include <Constants/GraphicsConstants.hpp>
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-#include <Utils/PrintGLErrors.hpp>              // PRINT_GL_ERRORS_IF_ANY
+#include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/PrintGLErrors.hpp>
 
-#include <glad/glad.h>          // GLuint, GLsizeiptr, glGenVertexArrays, glBindVertexArray,
-                                // glGenBuffers, glBindBuffer, glBufferData, glEnableVertexAttribArray
-                                // glVertexAttribPointer, glDeleteBuffers, glDeleteVertexArrays
+#include <glad/glad.h>
 
-#include <memory>                   // std::move
-
-static GLuint GenerateVAO() noexcept
+static GLuint GenerateVAO()
 {
     GLuint vao = 0;
     glGenVertexArrays(1, &vao);
@@ -23,7 +19,7 @@ static GLuint GenerateVAO() noexcept
 }
 
 template <typename TVector>
-static GLuint GenerateVBO(const std::vector<TVector> &std_vector, GLuint location) noexcept
+static GLuint GenerateVBO(const std::vector<TVector> &std_vector, const GLuint location)
 {
     if (std_vector.empty())
     {
@@ -31,9 +27,9 @@ static GLuint GenerateVBO(const std::vector<TVector> &std_vector, GLuint locatio
     }
 
     GLuint vbo = 0;
-    GLsizeiptr std_vector_size = sizeof(std_vector[0]) * std_vector.size();
-    const void *std_vector_pointer = reinterpret_cast<const void*>(&std_vector[0]);
-    constexpr GLint vector_size = TVector::Size();
+    const GLsizeiptr std_vector_size = sizeof(std_vector[0]) * std_vector.size();
+    const void* const std_vector_pointer = reinterpret_cast<const void*>(&std_vector[0]);
+    const GLint vector_size = TVector::Size();
 
     glGenBuffers(1, &vbo);
     PRINT_GL_ERRORS_IF_ANY();
@@ -53,7 +49,7 @@ static GLuint GenerateVBO(const std::vector<TVector> &std_vector, GLuint locatio
     return vbo;
 }
 
-static GLuint GenerateIBO(const std::vector<unsigned> &indices) noexcept
+static GLuint GenerateIBO(const std::vector<unsigned> &indices)
 {
     if (indices.empty())
     {
@@ -61,8 +57,8 @@ static GLuint GenerateIBO(const std::vector<unsigned> &indices) noexcept
     }
 
     GLuint ibo = 0;
-    GLsizeiptr indices_size = sizeof(indices[0]) * indices.size();
-    const void *indices_pointer = reinterpret_cast<const void*>(&indices[0]);
+    const GLsizeiptr indices_size = sizeof(indices[0]) * indices.size();
+    const void* const indices_pointer = reinterpret_cast<const void*>(&indices[0]);
 
     glGenBuffers(1, &ibo);
     PRINT_GL_ERRORS_IF_ANY();
@@ -76,7 +72,7 @@ static GLuint GenerateIBO(const std::vector<unsigned> &indices) noexcept
     return ibo;
 }
 
-static void ResetOpenGLState() noexcept
+static void ResetOpenGLState()
 {
     glEnableVertexAttribArray(0);
     PRINT_GL_ERRORS_IF_ANY();
@@ -87,7 +83,7 @@ namespace MG3TR
     SubMesh::SubMesh(const std::vector<Vector3> &vertices,
                      const std::vector<Vector3> &normals,
                      const std::vector<Vector2> &uvs,
-                     const std::vector<std::uint32_t> &indices) try
+                     const std::vector<std::uint32_t> &indices)
         : m_vertices(vertices),
           m_normals(normals),
           m_uvs(uvs),
@@ -95,7 +91,7 @@ namespace MG3TR
     {
         if (vertices.empty() || indices.empty())
         {
-            throw std::logic_error("Cannot create mesh with no vertices or no triangles!");
+            throw ExceptionWithStacktrace("Cannot create mesh with no vertices or no triangles!");
         }
 
         m_vao = GenerateVAO();
@@ -108,9 +104,33 @@ namespace MG3TR
 
         ResetOpenGLState();
     }
-    CATCH_RETHROW_EXCEPTIONS
+
+    SubMesh::SubMesh(std::vector<Vector3> &&vertices,
+                     std::vector<Vector3> &&normals,
+                     std::vector<Vector2> &&uvs,
+                     std::vector<std::uint32_t> &&indices)
+        : m_vertices(vertices),
+          m_normals(normals),
+          m_uvs(uvs),
+          m_indices(indices)
+    {
+        if (vertices.empty() || indices.empty())
+        {
+            throw ExceptionWithStacktrace("Cannot create mesh with no vertices or no triangles!");
+        }
+
+        m_vao = GenerateVAO();
+
+        m_vbo_vertices = GenerateVBO(m_vertices, MeshConstants::k_vertices_location);
+        m_vbo_normals = GenerateVBO(m_normals, MeshConstants::k_normals_location);
+        m_vbo_uvs = GenerateVBO(m_uvs, MeshConstants::k_uvs_location);
+
+        m_ibo = GenerateIBO(m_indices);
+
+        ResetOpenGLState();
+    }
     
-    SubMesh::~SubMesh() noexcept
+    SubMesh::~SubMesh()
     {
         if (m_vbo_uvs > 0)
         {
@@ -134,28 +154,91 @@ namespace MG3TR
         }
     }
 
-    SubMesh::SubMesh(const SubMesh &other) try
+    SubMesh::SubMesh(const SubMesh &other)
     {
         CopyFrom(other);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    SubMesh& SubMesh::operator=(const SubMesh &other) try
+    SubMesh& SubMesh::operator=(const SubMesh &other)
     {
         CopyFrom(other);
         return *this;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    SubMesh::SubMesh(SubMesh &&other) noexcept
+    SubMesh::SubMesh(SubMesh &&other)
     {
         MoveFrom(std::move(other));
     }
 
-    SubMesh& SubMesh::operator=(SubMesh &&other) noexcept
+    SubMesh& SubMesh::operator=(SubMesh &&other)
     {
         MoveFrom(std::move(other));
         return *this;
+    }
+
+    std::vector<Vector3>& SubMesh::GetVertices()
+    {
+        return m_vertices;
+    }
+
+    const std::vector<Vector3>& SubMesh::GetVertices() const
+    {
+        return m_vertices;
+    }
+
+    std::vector<Vector3>& SubMesh::GetNormals()
+    {
+        return m_normals;
+    }
+
+    const std::vector<Vector3>& SubMesh::GetNormals() const
+    {
+        return m_normals;
+    }
+
+    std::vector<Vector2>& SubMesh::GetUvs()
+    {
+        return m_uvs;
+    }
+
+    const std::vector<Vector2>& SubMesh::GetUvs() const
+    {
+        return m_uvs;
+    }
+
+    std::vector<unsigned>& SubMesh::GetIndices()
+    {
+        return m_indices;
+    }
+
+    const std::vector<unsigned>& SubMesh::GetIndices() const
+    {
+        return m_indices;
+    }
+
+    GLuint SubMesh::GetVAO() const
+    {
+        return m_vao;
+    }
+
+    GLuint SubMesh::GetVBOVertices() const
+    {
+        return m_vbo_vertices;
+    }
+
+    GLuint SubMesh::GetVBONormals() const
+    {
+        return m_vbo_normals;
+    }
+
+    GLuint SubMesh::GetVBOUVs() const
+    {
+        return m_vbo_uvs;
+    }
+
+    GLuint SubMesh::GetIBO() const
+    {
+        return m_ibo;
     }
 
     

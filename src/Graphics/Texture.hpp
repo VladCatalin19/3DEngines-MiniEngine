@@ -1,9 +1,9 @@
 #ifndef MG3TR_SRC_GRAPHICS_TEXTURE_HPP_INCLUDED
 #define MG3TR_SRC_GRAPHICS_TEXTURE_HPP_INCLUDED
 
-#include <glad/glad.h>          // GLuint
+#include <glad/glad.h>
 
-#include <string>               // std::string
+#include <string>
 
 namespace MG3TR
 {
@@ -22,24 +22,24 @@ namespace MG3TR
 
     public:
         Texture(const std::string &path_to_file);
-        virtual ~Texture() noexcept;
+        virtual ~Texture();
 
         Texture(const Texture &);
+        Texture(Texture &&);
+        
         Texture& operator=(const Texture &);
-
-        Texture(Texture &&) noexcept;
-        Texture& operator=(Texture &&) noexcept;
+        Texture& operator=(Texture &&);
 
         void LoadImage(const std::string &path_to_file);
 
-        void Bind(unsigned texture_unit_id = 0U);
+        void Bind(const unsigned texture_unit_id = 0U);
 
-        const std::string& GetPathToFile() const noexcept { return m_path_to_file; }
+        const std::string& GetPathToFile() const;
 
     private:
-        void FreeMemory() noexcept;
+        void FreeMemory();
         void CopyFrom(const Texture &other);
-        void MoveFrom(Texture &&other) noexcept;
+        void MoveFrom(Texture &&other);
     };
 }
 

@@ -4,9 +4,9 @@
 #include <Math/Vector2.hpp>
 #include <Math/Vector3.hpp>
 
-#include <glad/glad.h>          // GLuint
+#include <glad/glad.h>
 
-#include <vector>               // std::vector
+#include <vector>
 
 namespace MG3TR
 {
@@ -25,36 +25,41 @@ namespace MG3TR
         GLuint m_ibo;
 
     public:
-        SubMesh(const std::vector<Vector3> &vertices = {},
-                const std::vector<Vector3> &normals = {},
-                const std::vector<Vector2> &uvs = {},
-                const std::vector<std::uint32_t> &indices = {});
+        SubMesh(const std::vector<Vector3> &vertices,
+                const std::vector<Vector3> &normals,
+                const std::vector<Vector2> &uvs,
+                const std::vector<std::uint32_t> &indices);
+        
+        SubMesh(std::vector<Vector3> &&vertices,
+                std::vector<Vector3> &&normals,
+                std::vector<Vector2> &&uvs,
+                std::vector<std::uint32_t> &&indices);
 
-        virtual ~SubMesh() noexcept;
+        virtual ~SubMesh();
 
         SubMesh(const SubMesh &);
+        SubMesh(SubMesh &&);
+        
         SubMesh& operator=(const SubMesh &);
+        SubMesh& operator=(SubMesh &&);
 
-        SubMesh(SubMesh &&) noexcept;
-        SubMesh& operator=(SubMesh &&) noexcept;
+        std::vector<Vector3>& GetVertices();
+        const std::vector<Vector3>& GetVertices() const;
 
-        std::vector<Vector3>& GetVertices() noexcept { return m_vertices; }
-        const std::vector<Vector3>& GetVertices() const noexcept { return m_vertices; }
+        std::vector<Vector3>& GetNormals();
+        const std::vector<Vector3>& GetNormals() const;
 
-        std::vector<Vector3>& GetNormals() noexcept { return m_normals; }
-        const std::vector<Vector3>& GetNormals() const noexcept { return m_normals; }
+        std::vector<Vector2>& GetUvs();
+        const std::vector<Vector2>& GetUvs() const;
 
-        std::vector<Vector2>& GetUvs() noexcept { return m_uvs; }
-        const std::vector<Vector2>& GetUvs() const noexcept { return m_uvs; }
+        std::vector<unsigned>& GetIndices();
+        const std::vector<unsigned>& GetIndices() const;
 
-        std::vector<unsigned>& GetIndices() noexcept { return m_indices; }
-        const std::vector<unsigned>& GetIndices() const noexcept { return m_indices; }
-
-        GLuint GetVAO() const noexcept { return m_vao; }
-        GLuint GetVBOVertices() const noexcept { return m_vbo_vertices; }
-        GLuint GetVBONormals() const noexcept { return m_vbo_normals; }
-        GLuint GetVBOUVs() const noexcept { return m_vbo_uvs; }
-        GLuint GetIBO() const noexcept { return m_ibo; }
+        GLuint GetVAO() const;
+        GLuint GetVBOVertices() const;
+        GLuint GetVBONormals() const;
+        GLuint GetVBOUVs() const;
+        GLuint GetIBO() const;
 
     private:
         void CopyFrom(const SubMesh &other);

@@ -7,9 +7,9 @@
 #include <Math/Matrix4x4.hpp>
 #include <Scene/IJsonSerializeable.hpp>
 
-#include <glad/glad.h>          // GLuint
+#include <glad/glad.h>
 
-#include <string>               // std::string
+#include <string>
 
 namespace MG3TR
 {
@@ -27,38 +27,38 @@ namespace MG3TR
         std::string m_fragment_shader_path;
 
     public:
-        Shader() noexcept = default;
+        Shader() = default;
 
         Shader(const std::string &vertex_shader_path, const std::string &fragment_shader_path);
         Shader(const std::string &vertex_shader_path, const std::string &geometry_shader_path,
                const std::string &fragment_shader_path);
 
-        virtual ~Shader() noexcept;
+        virtual ~Shader();
 
         Shader(const Shader &);
-        Shader& operator=(const Shader &);
-
         Shader(Shader &&);
+        
+        Shader& operator=(const Shader &);
         Shader& operator=(Shader &&);
 
-        GLuint GetVertexShader() const noexcept { return m_vertex_shader; }
-        GLuint GetGeometryShader() const noexcept { return m_geometry_shader; }
-        GLuint GetFragmentShader() const noexcept { return m_fragment_shader; }
+        GLuint GetVertexShader() const;
+        GLuint GetGeometryShader() const;
+        GLuint GetFragmentShader() const;
 
-        GLuint GetProgram() const noexcept { return m_program; }
+        GLuint GetProgram() const;
         
-        void Use() const noexcept;
+        void Use() const;
 
-        virtual void SetUniforms() {}
-        virtual void BindAdditionals() {}
+        virtual void SetUniforms();
+        virtual void BindAdditionals();
 
-        void SetUniformFloat(const std::string &name, float value) const noexcept;
-        void SetUniformInt(const std::string &name, int value) const noexcept;
-        void SetUniformUnsigned(const std::string &name, unsigned value) const noexcept;
-        void SetUniformVector2(const std::string &name, const Vector2 &value) const noexcept;
-        void SetUniformVector3(const std::string &name, const Vector3 &value) const noexcept;
-        void SetUniformVector4(const std::string &name, const Vector4 &value) const noexcept;
-        void SetUniformMatrix4x4(const std::string &name, const Matrix4x4 &value) const noexcept;
+        void SetUniformFloat(const std::string &name, const float value) const;
+        void SetUniformInt(const std::string &name, const int value) const;
+        void SetUniformUnsigned(const std::string &name, const unsigned value) const;
+        void SetUniformVector2(const std::string &name, const Vector2 &value) const;
+        void SetUniformVector3(const std::string &name, const Vector3 &value) const;
+        void SetUniformVector4(const std::string &name, const Vector4 &value) const;
+        void SetUniformMatrix4x4(const std::string &name, const Matrix4x4 &value) const;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;

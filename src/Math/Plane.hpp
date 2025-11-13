@@ -13,23 +13,20 @@ namespace MG3TR
         float m_distance;
 
     public:
-        Plane(const Vector3 &normal = Vector3Constants::k_zero, float distance = 0.0F) noexcept
-            : m_normal(normal),
-              m_distance(distance)
-        {}
+        Plane(const Vector3& normal = Vector3Constants::k_zero, float distance = 0.0F);
+        Plane(const Vector3& normal, const Vector3& in_point);
+        ~Plane() = default;
 
-        Plane(const Vector3 &normal, const Vector3 &in_point) noexcept
-            : m_normal(Vector3::Normalize(normal)),
-              m_distance(Vector3::Dot(normal, in_point))
-        {}
+        Plane(const Plane&) = default;
+        Plane(Plane&&) = default;
+        
+        Plane& operator=(const Plane&) = default;
+        Plane& operator=(Plane&&) = default;
+        
+        Vector3 GetNormal() const;
+        float GetDistance() const;
 
-        Vector3 GetNormal() const noexcept { return m_normal; }
-        float GetDistance() const noexcept { return m_distance; }
-
-        float GetSignedDistance(const Vector3 &point) const noexcept
-        {
-            return Vector3::Dot(m_normal, point) - m_distance;
-        }
+        float GetSignedDistance(const Vector3& point) const;
     };
 }
 

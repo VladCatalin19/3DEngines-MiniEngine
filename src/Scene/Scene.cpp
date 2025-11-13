@@ -1,8 +1,9 @@
 #include "Scene.hpp"
 
+#include <Constants/GraphicsConstants.hpp>
+
 #include <Components/Camera.hpp>
 #include <Components/CameraController.hpp>
-#include <Components/Component.hpp>
 #include <Components/MeshRenderer.hpp>
 #include <Components/SkyboxFollowCamera.hpp>
 #include <Components/TestRotation.hpp>
@@ -23,24 +24,17 @@
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
 
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-
 #include <Window/Input.hpp>
 
-#include <algorithm>            // std::find
-#include <fstream>              // std::ofstream
-#include <memory>               // std::dynamic_pointer_cast
-#include <iomanip>              // std::setw
-#include <stdexcept>            // std::range_error, std::out_of_range
-#include <string>               // std::string, std::to_string
-#include <vector>               // std::vector
-
-#include <iostream>
+#include <fstream>
+#include <memory>
+#include <iomanip>
+#include <string>
 
 #define CREATE_SCENE_ELEMENTS
 
 #ifdef CREATE_SCENE_ELEMENTS
-static std::shared_ptr<MG3TR::Camera> CreateCameraAndAddItToScene(MG3TR::Scene &scene) try
+static std::shared_ptr<MG3TR::Camera> CreateCameraAndAddItToScene(MG3TR::Scene &scene)
 {
     auto camera_game_object = MG3TR::GameObject::Create("Camera");
     auto camera_transform = MG3TR::Transform::Create();
@@ -60,12 +54,11 @@ static std::shared_ptr<MG3TR::Camera> CreateCameraAndAddItToScene(MG3TR::Scene &
 
     return camera;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 
 
 static std::shared_ptr<MG3TR::GameObject> CreateRotatingCubeAndAddItToScene(MG3TR::Scene &scene,
-                                                                            std::shared_ptr<MG3TR::Camera> &camera) try
+                                                                            std::shared_ptr<MG3TR::Camera> &camera)
 {
     auto rotating_cube_game_object = MG3TR::GameObject::Create("Rotating Cube");
     auto rotating_cube_transform = MG3TR::Transform::Create();
@@ -77,7 +70,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateRotatingCubeAndAddItToScene(MG3T
     rotating_cube_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 90.0_rad, 0.0F } ));
     rotating_cube_transform->SetWorldScale( { 2.0F, 2.0F, 2.0F } );
 
-    auto rotating_cube_mesh = std::make_shared<MG3TR::Mesh>("res/Models/Cube/cube.obj");
+    auto rotating_cube_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_cube_path);
     auto rotating_cube_shader = std::make_shared<MG3TR::FragmentNormalShader>(camera, rotating_cube_transform);
 
     auto rotating_cube_mesh_renderer = std::make_shared<MG3TR::MeshRenderer>(rotating_cube_game_object, rotating_cube_transform,
@@ -89,12 +82,11 @@ static std::shared_ptr<MG3TR::GameObject> CreateRotatingCubeAndAddItToScene(MG3T
 
     return rotating_cube_game_object;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 
 
 static std::shared_ptr<MG3TR::GameObject> CreateSecondRotatingCubeAndAddItAsChildToTheFirstCube(std::shared_ptr<MG3TR::Camera> &camera,
-                                                                                                std::shared_ptr<MG3TR::GameObject> &rotating_cube_game_object) try
+                                                                                                std::shared_ptr<MG3TR::GameObject> &rotating_cube_game_object)
 {
     auto second_rotating_cube_game_object = MG3TR::GameObject::Create("Second Rotating Cube");
     auto second_rotating_cube_transform = MG3TR::Transform::Create();
@@ -106,7 +98,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateSecondRotatingCubeAndAddItAsChil
     second_rotating_cube_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 90.0_rad, 0.0F } ));
     second_rotating_cube_transform->SetWorldScale( { 0.5F, 0.5F, 0.5F } );
 
-    auto second_rotating_cube_mesh = std::make_shared<MG3TR::Mesh>("res/Models/Cube/cube.obj");
+    auto second_rotating_cube_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_cube_path);
     auto second_rotating_cube_shader = std::make_shared<MG3TR::FragmentNormalShader>(camera, second_rotating_cube_transform);
 
     auto second_rotating_cube_mesh_renderer = std::make_shared<MG3TR::MeshRenderer>(second_rotating_cube_game_object, second_rotating_cube_transform,
@@ -118,11 +110,10 @@ static std::shared_ptr<MG3TR::GameObject> CreateSecondRotatingCubeAndAddItAsChil
 
     return second_rotating_cube_game_object;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 
 
-static std::shared_ptr<MG3TR::GameObject> CreateSkyBox(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera) try
+static std::shared_ptr<MG3TR::GameObject> CreateSkyBox(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
     auto skybox_game_object = MG3TR::GameObject::Create("Skybox");
     auto skybox_transform = MG3TR::Transform::Create();
@@ -134,7 +125,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateSkyBox(MG3TR::Scene &scene, std:
     skybox_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 180.0_rad, 0.0F } ));
     skybox_transform->SetWorldScale( { 150.0F, 150.0F, 150.0F } );
 
-    auto skybox_mesh = std::make_shared<MG3TR::Mesh>("res/Models/Skybox/skybox.obj");
+    auto skybox_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_skybox_path);
     auto skybox_texture = skybox_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto skybox_shader = std::make_shared<MG3TR::TextureShader>(camera, skybox_transform, skybox_texture);
 
@@ -147,13 +138,12 @@ static std::shared_ptr<MG3TR::GameObject> CreateSkyBox(MG3TR::Scene &scene, std:
 
     return skybox_game_object;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 
 
-static constexpr MG3TR::Vector3 k_light_position(1'000.0F, 1'000.0F, 1'000.0F);
+static const MG3TR::Vector3 k_light_position(1'000.0F, 1'000.0F, 1'000.0F);
 
-static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera) try
+static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
     auto creeper_game_object = MG3TR::GameObject::Create("Creeper");
     auto creeper_transform = MG3TR::Transform::Create();
@@ -165,7 +155,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
     creeper_transform->SetWorldRotation(MG3TR::Quaternion( {0.0F, 180.0_rad, 0.0F} ));
     creeper_transform->SetWorldScale( { 2.0F, 2.0F, 2.0F } );
 
-    auto creeper_mesh = std::make_shared<MG3TR::Mesh>("res/Models/Creeper/creeper.obj");
+    auto creeper_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_creeper_path);
     auto creeper_texture = creeper_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto creeper_shader = std::make_shared<MG3TR::TextureAndLightingShader>(camera, creeper_transform,
                                                                             creeper_texture, k_light_position);
@@ -177,7 +167,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
 
 
 
-    auto sphere_game_object = MG3TR::GameObject::Create("Creeper");
+    auto sphere_game_object = MG3TR::GameObject::Create("Sphere");
     auto sphere_transform = MG3TR::Transform::Create();
     sphere_game_object->SetTransform(sphere_transform);
     sphere_transform->SetGameObject(sphere_game_object);
@@ -186,7 +176,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
     sphere_transform->SetWorldPosition(creeper_transform->TransformPointToWorldSpace(creeper_mesh_renderer->GetBoundingSphere().GetCenter()));
     sphere_transform->SetWorldScale(creeper_transform->GetWorldScale() * creeper_mesh_renderer->GetBoundingSphere().GetRadius());
 
-    auto sphere_mesh = std::make_shared<MG3TR::Mesh>("res/Models/Sphere/sphere.obj");
+    auto sphere_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_sphere_path);
     auto sphere_shader = std::make_shared<MG3TR::FragmentNormalShader>(camera, sphere_transform);
 
     auto sphere_mesh_renderer = std::make_shared<MG3TR::MeshRenderer>(sphere_game_object, sphere_transform,
@@ -195,11 +185,10 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
 
     return creeper_game_object;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 
 
-static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera) try
+static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
     auto map_game_object = MG3TR::GameObject::Create("Map");
     auto map_transform = MG3TR::Transform::Create();
@@ -211,7 +200,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::sh
     map_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 90.0_rad, 0.0F } ));
     map_transform->SetWorldScale( { 30.0F, 30.0F, 30.0F } );
 
-    auto map_mesh = std::make_shared<MG3TR::Mesh>("res/Models/MinecraftScene/Mineways2Skfb.obj");
+    auto map_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_map_path);
     auto map_texture = map_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto map_shader = std::make_shared<MG3TR::TextureAndLightingShader>(camera, map_transform, map_texture, k_light_position);
 
@@ -220,13 +209,12 @@ static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::sh
 
     return map_game_object;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 
 
-static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera) try
+static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
-    auto planet_game_object = MG3TR::GameObject::Create("Map");
+    auto planet_game_object = MG3TR::GameObject::Create("Planet");
     auto planet_transform = MG3TR::Transform::Create();
     planet_game_object->SetTransform(planet_transform);
     planet_transform->SetGameObject(planet_game_object);
@@ -236,7 +224,7 @@ static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std:
     planet_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 0.0F, 0.0F } ));
     planet_transform->SetWorldScale( { 1.0F, 1.0F, 1.0F } );
 
-    auto planet_mesh = std::make_shared<MG3TR::Mesh>("res/Models/Sphere/sphere.obj");
+    auto planet_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_sphere_path);
     auto planet_texture = planet_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto planet_shader = std::make_shared<MG3TR::TextureAndLightingShader>(camera, planet_transform,
                                                                            planet_texture, k_light_position);
@@ -247,11 +235,10 @@ static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std:
 
     return planet_game_object;
 }
-CATCH_RETHROW_EXCEPTIONS
 #endif
 
 
-static void CallInitialize(MG3TR::Transform &root_transform) try
+static void CallInitialize(MG3TR::Transform &root_transform)
 {
     auto game_object = root_transform.GetGameObject();
     if (game_object != nullptr)
@@ -267,9 +254,8 @@ static void CallInitialize(MG3TR::Transform &root_transform) try
         CallInitialize(*child);
     }
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static void CallParseInput(MG3TR::Transform &root_transform, const MG3TR::Input &input) try
+static void CallParseInput(MG3TR::Transform &root_transform, const MG3TR::Input &input)
 {
     auto game_object = root_transform.GetGameObject();
     if (game_object != nullptr)
@@ -285,9 +271,8 @@ static void CallParseInput(MG3TR::Transform &root_transform, const MG3TR::Input 
         CallParseInput(*child, input);
     }
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static void CallFrameStart(MG3TR::Transform &root_transform, float delta_time) try
+static void CallFrameStart(MG3TR::Transform &root_transform, const float delta_time)
 {
     auto game_object = root_transform.GetGameObject();
     if (game_object != nullptr)
@@ -303,9 +288,8 @@ static void CallFrameStart(MG3TR::Transform &root_transform, float delta_time) t
         CallFrameStart(*child, delta_time);
     }
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static void CallFrameUpdate(MG3TR::Transform &root_transform, float delta_time) try
+static void CallFrameUpdate(MG3TR::Transform &root_transform, const float delta_time)
 {
     auto game_object = root_transform.GetGameObject();
     if (game_object != nullptr)
@@ -321,9 +305,8 @@ static void CallFrameUpdate(MG3TR::Transform &root_transform, float delta_time) 
         CallFrameUpdate(*child, delta_time);
     }
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static void CallFrameEnd(MG3TR::Transform &root_transform, float delta_time) try
+static void CallFrameEnd(MG3TR::Transform &root_transform, const float delta_time)
 {
     auto game_object = root_transform.GetGameObject();
     if (game_object != nullptr)
@@ -339,9 +322,8 @@ static void CallFrameEnd(MG3TR::Transform &root_transform, float delta_time) try
         CallFrameEnd(*child, delta_time);
     }
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static std::string CalculateIndentation(unsigned indent) try
+static std::string CalculateIndentation(const unsigned indent)
 {
     std::string result;
 
@@ -351,16 +333,12 @@ static std::string CalculateIndentation(unsigned indent) try
     }
     return result;
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static std::string TransformToString(const MG3TR::Transform &transform, unsigned indent = 0U) try
+static std::string TransformToString(const MG3TR::Transform &transform, const unsigned indent = 0U)
 {
     std::string result;
-    bool has_transform_name = (transform.GetGameObject() != nullptr);
-    std::string name = has_transform_name ? transform.GetGameObject()->GetName()
-                                          : "";
-
-    std::string matrix_indent = CalculateIndentation(indent + 1) + "                             ";
+    const bool has_transform_name = (transform.GetGameObject() != nullptr);
+    const std::string name = has_transform_name ? transform.GetGameObject()->GetName() : "";
 
     result += CalculateIndentation(indent) + "Transform: " + name + "\n";
     result += CalculateIndentation(indent + 1) + "Local Position: " + transform.GetLocalPosition().ToString() + "\n";
@@ -399,9 +377,8 @@ static std::string TransformToString(const MG3TR::Transform &transform, unsigned
 
     return result;
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static std::shared_ptr<MG3TR::Camera> FindCameraWithUID(const std::shared_ptr<MG3TR::Transform> &transform, MG3TR::TUID uid) try
+static std::shared_ptr<MG3TR::Camera> FindCameraWithUID(const std::shared_ptr<MG3TR::Transform> &transform, MG3TR::TUID uid)
 {
     if (transform->GetGameObject() != nullptr)
     {
@@ -428,9 +405,8 @@ static std::shared_ptr<MG3TR::Camera> FindCameraWithUID(const std::shared_ptr<MG
 
     return found_camera;
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static std::shared_ptr<MG3TR::Transform> FindTransformWithUID(const std::shared_ptr<MG3TR::Transform> &transform, MG3TR::TUID uid) try
+static std::shared_ptr<MG3TR::Transform> FindTransformWithUID(const std::shared_ptr<MG3TR::Transform> &transform, MG3TR::TUID uid)
 {
     if (transform->GetUID() == uid)
     {
@@ -451,7 +427,8 @@ static std::shared_ptr<MG3TR::Transform> FindTransformWithUID(const std::shared_
 
     return found_transform;
 }
-CATCH_RETHROW_EXCEPTIONS
+
+
 
 namespace MG3TR
 {
@@ -460,13 +437,22 @@ namespace MG3TR
         m_root_transform = Transform::Create();
     }
 
-    Scene::Scene(const std::string &file_name) try
+    Scene::Scene(const std::string &file_name)
     {
         LoadFromFile(file_name);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Scene::Initialize() try
+    std::shared_ptr<Transform>& Scene::GetRootTransform()
+    {
+        return m_root_transform;
+    }
+
+    const std::shared_ptr<Transform>& Scene::GetRootTransform() const
+    {
+        return m_root_transform;
+    }
+
+    void Scene::Initialize()
     {
 #        ifdef CREATE_SCENE_ELEMENTS
             auto camera = CreateCameraAndAddItToScene(*this);
@@ -480,24 +466,21 @@ namespace MG3TR
 
         CallInitialize(*m_root_transform);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Scene::Update(const Input &input, float delta_time) try
+    void Scene::Update(const Input &input, const float delta_time)
     {
         CallParseInput(*m_root_transform, input);
         CallFrameStart(*m_root_transform, delta_time);
         CallFrameUpdate(*m_root_transform, delta_time);
         CallFrameEnd(*m_root_transform, delta_time);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    std::string Scene::ToString() const try
+    std::string Scene::ToString() const
     {
         return TransformToString(*m_root_transform);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void Scene::LoadFromFile(const std::string &file_name) try
+    void Scene::LoadFromFile(const std::string &file_name)
     {
         std::ifstream stream(file_name);
         nlohmann::json json;
@@ -508,30 +491,27 @@ namespace MG3TR
         m_root_transform->Deserialize(json);
         m_root_transform->LateBindAfterDeserialization(*this);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void Scene::SaveToFile(const std::string &file_name) const try
+    void Scene::SaveToFile(const std::string &file_name) const
     {
         std::ofstream stream(file_name);
         (void)(stream << std::setw(4) << m_root_transform->Serialize() << std::endl);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    std::ostream& operator<<(std::ostream &os, const MG3TR::Scene &scene) try
+    std::ostream& operator<<(std::ostream &os, const MG3TR::Scene &scene)
     {
         return os << scene.ToString();
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    std::shared_ptr<Camera> Scene::FindCameraWithUID(TUID uid) try
+    std::shared_ptr<Camera> Scene::FindCameraWithUID(const TUID uid)
     {
-        return ::FindCameraWithUID(m_root_transform, uid);
+        auto camera = ::FindCameraWithUID(m_root_transform, uid);
+        return camera;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    std::shared_ptr<Transform> Scene::FindTransformWithUID(TUID uid) try
+    std::shared_ptr<Transform> Scene::FindTransformWithUID(const TUID uid)
     {
-        return ::FindTransformWithUID(m_root_transform, uid);
+        auto transfrom = ::FindTransformWithUID(m_root_transform, uid);
+        return transfrom;
     }
-    CATCH_RETHROW_EXCEPTIONS
 }

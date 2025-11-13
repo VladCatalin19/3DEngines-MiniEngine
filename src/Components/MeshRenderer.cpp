@@ -3,6 +3,8 @@
 #include <Components/Camera.hpp>
 #include <Constants/JSONConstants.hpp>
 #include <Constants/MathConstants.hpp>
+#include <Graphics/Mesh.hpp>
+#include <Graphics/Shader.hpp>
 #include <Graphics/Shaders/FragmentNormalShader.hpp>
 #include <Graphics/Shaders/TextureAndLightingShader.hpp>
 #include <Graphics/Shaders/TextureShader.hpp>
@@ -15,93 +17,83 @@
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
 
-#include <Utils/PrintGLErrors.hpp>              // PRINT_GL_ERRORS_IF_ANY
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
+#include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/PrintGLErrors.hpp>
 
-#include <memory>           // std::make_shared
-
-static MG3TR::Vector3 MinComponentWise(const MG3TR::Vector3 &v1, const MG3TR::Vector3 &v2) noexcept
-{
-    return
-    {
-        MG3TR::Math::Min(v1.x(), v2.x()),
-        MG3TR::Math::Min(v1.y(), v2.y()),
-        MG3TR::Math::Min(v1.z(), v2.z())
-    };
-}
-
-static MG3TR::Vector3 MaxComponentWise(const MG3TR::Vector3 &v1, const MG3TR::Vector3 &v2) noexcept
-{
-    return
-    {
-        MG3TR::Math::Max(v1.x(), v2.x()),
-        MG3TR::Math::Max(v1.y(), v2.y()),
-        MG3TR::Math::Max(v1.z(), v2.z())
-    };
-}
-
-static float MaxComponent(const MG3TR::Vector3 &v) noexcept
-{
-    return MG3TR::Math::Max(v.x(), v.y(), v.z());
-}
-
-static MG3TR::Sphere CalculateMeshBoundingSphereRadiusInWorldSpace(const MG3TR::Mesh &mesh) try
+static MG3TR::Sphere CalculateMeshBoundingSphereRadiusInWorldSpace(const MG3TR::Mesh &mesh)
 {
     MG3TR::Vector3 min_coordinates;
     MG3TR::Vector3 max_coordinates;
 
     for (const auto &mesh : mesh.GetSubmeshes())
     {
-        for (const auto &vertex : mesh.GetVertices())
+        for (auto vertex : mesh.GetVertices())
         {
-            min_coordinates = MinComponentWise(min_coordinates, vertex);
-            max_coordinates = MaxComponentWise(max_coordinates, vertex);
+            min_coordinates = MG3TR::Vector3::Min(min_coordinates, vertex);
+            max_coordinates = MG3TR::Vector3::Max(max_coordinates, vertex);
         }
     }
 
-    MG3TR::Vector3 center = MG3TR::Vector3::Lerp(max_coordinates, min_coordinates, 0.5F);
-    float radius = (max_coordinates - min_coordinates).Magnitude() * 0.5F;
-    return { center, radius };
+    const MG3TR::Vector3 center = MG3TR::Vector3::Lerp(max_coordinates, min_coordinates, 0.5F);
+    const float radius = (max_coordinates - min_coordinates).Magnitude() * 0.5F;
+    const MG3TR::Sphere sphere(center, radius);
+
+    return sphere;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 static bool IsObjectInsideCameraFrustum(const MG3TR::Camera &camera, const MG3TR::Transform &object_transform,
                                         const MG3TR::Sphere &bounding_sphere)
 {
-    MG3TR::Frustum camera_frustum(camera);
-    MG3TR::Vector3 object_scale = object_transform.GetWorldScale();
-    float max_scale = MaxComponent(object_scale);
+    const MG3TR::Frustum camera_frustum(camera);
+    const MG3TR::Vector3 object_scale = object_transform.GetWorldScale();
+    const float max_scale = MG3TR::Math::Max(object_scale.x(), object_scale.y(), object_scale.z());
 
-    MG3TR::Vector3 object_center = object_transform.TransformPointToWorldSpace(bounding_sphere.GetCenter());
-    float object_radius = bounding_sphere.GetRadius() * max_scale;
+    const MG3TR::Vector3 object_center = object_transform.TransformPointToWorldSpace(bounding_sphere.GetCenter());
+    const float object_radius = bounding_sphere.GetRadius() * max_scale;
 
-    MG3TR::Sphere world_space_sphere(object_center, object_radius);
-
-    return world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetLeftFace())
+    const MG3TR::Sphere world_space_sphere(object_center, object_radius);
+    const bool result = world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetLeftFace())
            && world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetRightFace())
            && world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetFarFace())
            && world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetNearFace())
            && world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetTopFace())
            && world_space_sphere.IsOnOrInFrontOfPlane(camera_frustum.GetBottomFace());
+
+    return result;
 }
 
 namespace MG3TR
 {
+    MeshRenderer::MeshRenderer(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform)
+        : Component(game_object, transform)
+    {
+
+    }
+    
     MeshRenderer::MeshRenderer(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
                                const std::shared_ptr<Mesh> &mesh, const std::shared_ptr<Shader> &shader,
-                               const std::weak_ptr<Camera> &camera, bool use_frustum_culling) try
+                               const std::weak_ptr<Camera> &camera, const bool use_frustum_culling)
         : Component(game_object, transform),
           m_mesh_bounding_sphere({}, 0.0F)
     {
         Construct(game_object, transform, mesh, shader, camera, use_frustum_culling);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void MeshRenderer::FrameEnd([[maybe_unused]] float delta_time) try
+    Sphere MeshRenderer::GetBoundingSphere() const
     {
-        if (m_use_frustum_culling && !IsObjectInsideCameraFrustum(*m_camera.lock(), *GetTransform().lock(), m_mesh_bounding_sphere))
+        return m_mesh_bounding_sphere;
+    }
+
+    void MeshRenderer::FrameEnd([[maybe_unused]] float delta_time)
+    {
+        if (m_use_frustum_culling)
         {
-            return;
+            const bool is_visible_by_camera = IsObjectInsideCameraFrustum(*m_camera.lock(), *GetTransform().lock(), m_mesh_bounding_sphere);
+
+            if (is_visible_by_camera)
+            {
+                return;
+            }
         }
 
         m_shader->Use();
@@ -117,9 +109,8 @@ namespace MG3TR
             PRINT_GL_ERRORS_IF_ANY();
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    nlohmann::json MeshRenderer::Serialize() const try
+    nlohmann::json MeshRenderer::Serialize() const
     {
         namespace Constants = MeshRendererJSONConstants;
 
@@ -132,9 +123,8 @@ namespace MG3TR
         json[Constants::k_parent_node][Constants::k_use_frustum_culling_attribute] = m_use_frustum_culling;
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void MeshRenderer::Deserialize(const nlohmann::json &json) try
+    void MeshRenderer::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = MeshRendererJSONConstants;
 
@@ -166,14 +156,13 @@ namespace MG3TR
         }
         else
         {
-            throw std::logic_error("Could not determine what shader was used!" + shader_json.dump());
+            throw ExceptionWithStacktrace("Could not determine what shader was used!" + shader_json.dump());
         }
         m_shader->Deserialize(shader_json);
 
         m_camera_uid = renderer_json.at(Constants::k_camera_uid_attribute);
         m_use_frustum_culling = renderer_json.at(Constants::k_use_frustum_culling_attribute);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
     void MeshRenderer::LateBindAfterDeserialization(Scene &scene) 
     {
@@ -181,8 +170,8 @@ namespace MG3TR
 
         if (found_camera == nullptr)
         {
-            throw std::logic_error("Could not find camera with UID " + std::to_string(m_camera_uid)
-                                   + " for MeshRenderer script");
+            throw ExceptionWithStacktrace("Could not find camera with UID " + std::to_string(m_camera_uid)
+                                          + " for MeshRenderer script");
         }
         m_camera = found_camera;
 
@@ -192,7 +181,7 @@ namespace MG3TR
 
     void MeshRenderer::Construct(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
                                  const std::shared_ptr<Mesh> &mesh, const std::shared_ptr<Shader> &shader,
-                                 const std::weak_ptr<Camera> &camera, bool use_frustum_culling) try
+                                 const std::weak_ptr<Camera> &camera, const bool use_frustum_culling)
     {
         SetGameObject(game_object);
         SetTransform(transform);
@@ -211,5 +200,4 @@ namespace MG3TR
             m_mesh_bounding_sphere = CalculateMeshBoundingSphereRadiusInWorldSpace(*mesh);
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
 }

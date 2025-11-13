@@ -1,20 +1,17 @@
 #ifndef MG3TR_SRC_SCENE_SCENE_HPP_INCLUDED
 #define MG3TR_SRC_SCENE_SCENE_HPP_INCLUDED
 
-#include <Scripting/GameObject.hpp>
-#include <Scripting/Transform.hpp>
+#include <Utils/TUID.hpp>
 
-#include <Window/Input.hpp>
-
-#include <cstddef>              // std::size_t
-#include <memory>               // std::shared_ptr
-#include <ostream>              // std::ostream
-#include <string>               // std::string
-#include <vector>               // std::vector
+#include <memory>
+#include <ostream>
+#include <string>
 
 namespace MG3TR
 {
     class Camera;
+    class Input;
+    class Transform;
 
     class Scene
     {
@@ -24,20 +21,20 @@ namespace MG3TR
     public:
         Scene();
         Scene(const std::string &file_name);
-        virtual ~Scene() noexcept = default;
+        virtual ~Scene() = default;
 
         Scene(const Scene &) = delete;
-        Scene& operator=(const Scene &) = delete;
-
         Scene(Scene &&) = default;
+        
+        Scene& operator=(const Scene &) = delete;
         Scene& operator=(Scene &&) = default;
 
-        std::shared_ptr<Transform>& GetRootTransform() noexcept { return m_root_transform; }
-        const std::shared_ptr<Transform>& GetRootTransform() const noexcept { return m_root_transform; }
+        std::shared_ptr<Transform>& GetRootTransform();
+        const std::shared_ptr<Transform>& GetRootTransform() const;
 
         void Initialize();
 
-        void Update(const Input &input, float delta_time);
+        void Update(const Input &input, const float delta_time);
 
         std::string ToString() const;
         friend std::ostream& operator<<(std::ostream &os, const Scene &scene);
@@ -45,8 +42,8 @@ namespace MG3TR
         void LoadFromFile(const std::string &file_name);
         void SaveToFile(const std::string &file_name) const;
 
-        std::shared_ptr<Camera> FindCameraWithUID(TUID uid);
-        std::shared_ptr<Transform> FindTransformWithUID(TUID uid);
+        std::shared_ptr<Camera> FindCameraWithUID(const TUID uid);
+        std::shared_ptr<Transform> FindTransformWithUID(const TUID uid);
     };
 }
 

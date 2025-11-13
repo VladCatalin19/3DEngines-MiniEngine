@@ -1,10 +1,15 @@
-﻿cmake_minimum_required(VERSION 4.0)
+﻿cmake_minimum_required(VERSION 3.27)
 
 project("MG3TR")
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_COLOR_DIAGNOSTICS ON)
+
+set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+add_compile_definitions(GLFW_INCLUDE_NONE)
+add_compile_definitions(MG3TR_ROOT_DIR=\"${CMAKE_CURRENT_LIST_DIR}/\")
 
 include_directories("inc")
 include_directories("src")
@@ -86,5 +91,5 @@ if (CMAKE_SYSTEM_NAME STREQUAL "Windows")
     )
 
 elseif (CMAKE_SYSTEM_NAME STREQUAL "Linux")
-    target_link_libraries(${PROJECT_NAME} glfw assimp ${CMAKE_DL_LIBS})
+    target_link_libraries(${PROJECT_NAME} glfw assimp stdc++exp ${CMAKE_DL_LIBS})
 endif()

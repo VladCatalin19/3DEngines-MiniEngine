@@ -6,22 +6,26 @@
 #include <Math/Quaternion.hpp>
 #include <Scripting/Transform.hpp>
 
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-
 namespace MG3TR
 {
-    void TestRotation::FrameUpdate(float delta_time) try
+     TestRotation::TestRotation(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform)
+        : Component(game_object, transform)
+    {
+
+    }
+    
+    void TestRotation::FrameUpdate(const float delta_time)
     {
         auto transform = GetTransform().lock();
 
-        auto rotation = transform->GetWorldRotation();
-        auto additional_rotation = Quaternion(Vector3(0.0F, delta_time, 0.0F));
+        const auto rotation = transform->GetWorldRotation();
+        const auto additional_rotation = Quaternion(Vector3(0.0F, delta_time, 0.0F));
+        const auto world_rotation = rotation * additional_rotation;
 
-        transform->SetWorldRotation(rotation * additional_rotation);
+        transform->SetWorldRotation(world_rotation);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    nlohmann::json TestRotation::Serialize() const try
+    nlohmann::json TestRotation::Serialize() const
     {
         namespace Constants = TestMRotationJSONConstants;
 
@@ -29,15 +33,13 @@ namespace MG3TR
         json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void TestRotation::Deserialize(const nlohmann::json &json) try
+    void TestRotation::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = TestMRotationJSONConstants;
 
         SetUID(json.at(Constants::k_parent_node).at(Constants::k_uid_attribute));
     }
-    CATCH_RETHROW_EXCEPTIONS
     
     void TestRotation::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
     {

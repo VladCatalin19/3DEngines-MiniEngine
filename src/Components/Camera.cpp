@@ -1,18 +1,44 @@
 #include "Camera.hpp"
 
 #include <Constants/JSONConstants.hpp>
-#include <Math/Matrix4x4.hpp>
 #include <Scripting/Transform.hpp>
-
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-
-#include <nlohmann/json.hxx>
-
-#include <stdexcept>                // std::logic_error
+#include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
 {
-    Matrix4x4 Camera::GetViewMatrix() const noexcept
+    Camera::Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform)
+        : Component(game_object, transform)
+    {
+
+    }
+
+    Camera::Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
+                   const float fov, const float aspect_ratio, const float znear, const float zfar)
+        : Component(game_object, transform),
+            m_camera_mode(CameraMode::Perspective),
+            m_fov(fov),
+            m_aspect_ratio(aspect_ratio),
+            m_znear(znear),
+            m_zfar(zfar)
+    {
+
+    }
+
+    Camera::Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
+                   const float xmin, const float xmax, const float ymin, const float ymax, const float znear, const float zfar)
+        : Component(game_object, transform),
+            m_camera_mode(CameraMode::Orthographic),
+            m_xmin(xmin),
+            m_xmax(xmax),
+            m_ymin(ymin),
+            m_ymax(ymax),
+            m_znear(znear),
+            m_zfar(zfar)
+    {
+
+    }
+
+    Matrix4x4 Camera::GetViewMatrix() const
     {
         const auto &transform = GetTransform().lock();
 
@@ -23,26 +49,77 @@ namespace MG3TR
         return Matrix4x4::LookAt(eye, center, up);
     }
     
-    Matrix4x4 Camera::GetProjectionMatrix() const try
+    Matrix4x4 Camera::GetProjectionMatrix() const
     {
+        Matrix4x4 matrix;
+
         switch (m_camera_mode)
         {
             case CameraMode::Perspective:
             {
-                return Matrix4x4::Perspective(m_fov, m_aspect_ratio, m_znear, m_zfar);
+                matrix = Matrix4x4::Perspective(m_fov, m_aspect_ratio, m_znear, m_zfar);
+                break;
             }
-            break;
             case CameraMode::Orthographic:
             {
-                return Matrix4x4::Orthographic(m_xmin, m_xmax, m_ymin, m_ymax, m_znear, m_zfar);
+                matrix = Matrix4x4::Orthographic(m_xmin, m_xmax, m_ymin, m_ymax, m_znear, m_zfar);
+                break;
             }
-            break;
+            default:
+            {
+                throw ExceptionWithStacktrace("Invalid camera type.");
+            }
         }
-        throw std::logic_error("Invalid camera type.");
+
+        return matrix;
     }
-    CATCH_RETHROW_EXCEPTIONS
+
+    CameraMode Camera::GetCameraMode() const
+    {
+        return m_camera_mode;
+    }
+
+    float Camera::GetFov() const
+    {
+        return m_fov;
+    }
+
+    float Camera::GetAspectRatio() const
+    {
+        return m_aspect_ratio;
+    }
+
+    float Camera::GetXmin() const
+    {
+        return m_xmin;
+    }
+
+    float Camera::GetXmax() const
+    {
+        return m_xmax;
+    }
+
+    float Camera::GetYmin() const
+    {
+        return m_ymin;
+    }
+
+    float Camera::GetYmax() const
+    {
+        return m_ymax;
+    }
+
+    float Camera::GetZnear() const
+    {
+        return m_znear;
+    }
+
+    float Camera::GetZfar() const
+    {
+        return m_zfar;
+    }
     
-    nlohmann::json Camera::Serialize() const try
+    nlohmann::json Camera::Serialize() const
     {
         namespace Constants = CameraJSONConstants;
 
@@ -64,9 +141,8 @@ namespace MG3TR
 
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void Camera::Deserialize(const nlohmann::json &json) try
+    void Camera::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = CameraJSONConstants;
 
@@ -86,7 +162,6 @@ namespace MG3TR
         m_znear = camera_json.at(Constants::k_znear_attribute);
         m_zfar = camera_json.at(Constants::k_zfar_attribute);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
     void Camera::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
     {

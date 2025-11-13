@@ -3,25 +3,21 @@
 
 #include "Component.hpp"
 
-#include <Math/Vector3.hpp>
-
 namespace MG3TR
 {
     class TestRotation : public Component
     {
     public:
-        TestRotation(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept
-            : Component(game_object, transform)
-        {}
-        virtual ~TestRotation() noexcept = default;
+        TestRotation(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform);
+        virtual ~TestRotation() = default;
 
         TestRotation(const TestRotation &) = delete;
+        TestRotation(TestRotation &&) = default;
+        
         TestRotation& operator=(const TestRotation &) = delete;
+        TestRotation& operator=(TestRotation &&) = default;
 
-        TestRotation(TestRotation &&) noexcept = default;
-        TestRotation& operator=(TestRotation &&) noexcept = default;
-
-        virtual void FrameUpdate(float delta_time) override;
+        virtual void FrameUpdate(const float delta_time) override;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;

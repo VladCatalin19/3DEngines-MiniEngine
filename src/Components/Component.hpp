@@ -3,14 +3,14 @@
 
 #include <Utils/UIDGenerator.hpp>
 #include <Scene/IJsonSerializeable.hpp>
-#include <Window/Input.hpp>
 
-#include <memory>               // std::weak_ptr
+#include <memory>
 
 namespace MG3TR
 {
     class GameObject;
     class Transform;
+    class Input;
 
     class Component : public IJsonSerializeable
     {
@@ -20,41 +20,41 @@ namespace MG3TR
 
         static inline UIDGenerator s_uid_generator;
         TUID m_uid;
-    
+
     public:
-        Component() noexcept;
-        Component(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept;
-        virtual ~Component() noexcept = default;
+        Component();
+        Component(const std::weak_ptr<GameObject>& game_object, const std::weak_ptr<Transform>& transform);
+        virtual ~Component() = default;
 
         Component(const Component &) = delete;
+        Component(Component &&) = default;
+        
         Component& operator=(const Component &) = delete;
+        Component& operator=(Component &&) = default;
 
-        Component(Component &&) noexcept = default;
-        Component& operator=(Component &&) noexcept = default;
+        std::weak_ptr<GameObject> GetGameObject() const;
+        void SetGameObject(const std::weak_ptr<GameObject> &game_object);
 
-        std::weak_ptr<GameObject> GetGameObject() const noexcept { return m_game_object; }
-        void SetGameObject(const std::weak_ptr<GameObject> &game_object) noexcept { m_game_object = game_object; }
+        std::weak_ptr<Transform> GetTransform() const;
+        void SetTransform(const std::weak_ptr<Transform> &transform);
 
-        std::weak_ptr<Transform> GetTransform() const noexcept { return m_transform; }
-        void SetTransform(const std::weak_ptr<Transform> &transform) noexcept { m_transform = transform; }
-
-        TUID GetUID() const noexcept { return m_uid; }
+        TUID GetUID() const;
 
     protected:
-        void SetUID(TUID uid) noexcept { m_uid = uid; }
+        void SetUID(TUID uid);
 
     public:
-        virtual void Initialize() {}
+        virtual void Initialize();
 
-        virtual void ParseInput([[maybe_unused]] const Input &input) {}
+        virtual void ParseInput([[maybe_unused]] const Input &input);
 
-        virtual void FrameStart([[maybe_unused]] float delta_time) {}
-        virtual void FrameUpdate([[maybe_unused]] float delta_time) {}
-        virtual void FrameEnd([[maybe_unused]] float delta_time) {}
+        virtual void FrameStart([[maybe_unused]] const float delta_time);
+        virtual void FrameUpdate([[maybe_unused]] const float delta_time);
+        virtual void FrameEnd([[maybe_unused]] const float delta_time);
 
         virtual nlohmann::json Serialize() const = 0;
-        virtual void Deserialize(const nlohmann::json &json) = 0;
-        virtual void LateBindAfterDeserialization(Scene &scene) = 0;
+        virtual void Deserialize(const nlohmann::json& json) = 0;
+        virtual void LateBindAfterDeserialization(Scene& scene) = 0;
     };
 }
 

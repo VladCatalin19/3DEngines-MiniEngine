@@ -1,4 +1,5 @@
 #include "GameObject.hpp"
+#include "Utils/ExceptionWithStacktrace.hpp"
 
 #include <Components/Camera.hpp>
 #include <Components/CameraController.hpp>
@@ -7,89 +8,124 @@
 #include <Components/TestMovement.hpp>
 #include <Components/TestRotation.hpp>
 #include <Constants/JSONConstants.hpp>
+#include <Utils/ExceptionWithStacktrace.hpp>
 
-#include <Components/Component.hpp>
-
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-
-#include <algorithm>            // std::find
-#include <cstddef>              // std::size_t
-#include <memory>               // std::move, std::make_shared
-#include <stdexcept>            // std::out_of_range, std::range_error
-#include <string>               // std::string, std::to_string
+#include <format>
 
 namespace MG3TR
 {
     GameObject::GameObject(const std::string &name)
         : m_name(name),
           m_uid(s_uid_generator.GetNextUID())
-    {}
-
-    [[nodiscard]] std::shared_ptr<GameObject> GameObject::Create(const std::string &name) try
     {
-        return std::shared_ptr<GameObject>(new GameObject(name));
+
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void GameObject::AddComponent(const std::shared_ptr<Component> &component) try
+    [[nodiscard]] std::shared_ptr<GameObject> GameObject::Create(const std::string &name)
     {
-        auto component_in_vector_iterator = std::find(m_components.cbegin(), m_components.cend(), component);
-        bool is_component_added = (component_in_vector_iterator != m_components.cend());
+        auto ptr = std::shared_ptr<GameObject>(new GameObject(name));
+        return ptr;
+    }
+
+    bool GameObject::operator==(const GameObject &other) const
+    {
+        const bool are_equal = (m_uid == other.m_uid);
+        return are_equal;
+    }
+
+    bool GameObject::operator!=(const GameObject &other) const
+    {
+        const bool are_not_equal = (m_uid != other.m_uid);
+        return are_not_equal;
+    }
+
+    const std::string& GameObject::GetName() const
+    {
+        return m_name;
+    }
+
+    void GameObject::SetName(const std::string &name)
+    {
+        m_name = name;
+    }
+
+    std::weak_ptr<Transform> GameObject::GetTransform() const
+    {
+        return m_transform;
+    }
+
+    void GameObject::SetTransform(const std::shared_ptr<Transform> &transform)
+    {
+        m_transform = transform;
+    }
+
+    std::vector<std::shared_ptr<Component>>& GameObject::GetComponents()
+    {
+        return m_components;
+    }
+
+    const std::vector<std::shared_ptr<Component>>& GameObject::GetComponents() const
+    {
+        return m_components;
+    }
+
+    void GameObject::AddComponent(const std::shared_ptr<Component> &component)
+    {
+        const auto component_in_vector_iterator = std::find(m_components.cbegin(), m_components.cend(), component);
+        const bool is_component_added = (component_in_vector_iterator != m_components.cend());
         if (is_component_added)
         {
-            throw std::range_error("Could not add component to current object because component"
-                                   " has already been added previously.");
+            throw ExceptionWithStacktrace("Could not add component to current object because component"
+                                          " has already been added previously.");
         }
         m_components.push_back(component);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void GameObject::AddComponent(const std::shared_ptr<Component> &component, std::size_t position) try
+    void GameObject::AddComponent(const std::shared_ptr<Component> &component, const std::size_t position)
     {
-        auto component_in_vector_iterator = std::find(m_components.cbegin(), m_components.cend(), component);
-        bool is_component_added = (component_in_vector_iterator != m_components.cend());
+        const auto component_in_vector_iterator = std::find(m_components.cbegin(), m_components.cend(), component);
+        const bool is_component_added = (component_in_vector_iterator != m_components.cend());
         if (is_component_added)
         {
-            throw std::range_error("Could not add component to current object because component"
-                                   " has already been added previously.");
+            throw ExceptionWithStacktrace("Could not add component to current object because component"
+                                          " has already been added previously.");
         }
 
-        if (position >= m_components.size())
+        const std::size_t components_size = m_components.size();
+        if (position >= components_size)
         {
-            throw std::out_of_range("Cannot add component at " + std::to_string(position)
-                                    + " bause current object has " + std::to_string(m_components.size())
-                                    + " elements.");
+            const std::string error = std::format("Cannot add component at position {} because current object has {} elements.",
+                                                  position, components_size);
+            throw ExceptionWithStacktrace(error);
         }
 
         (void)m_components.insert(m_components.begin() + position, std::move(component));
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void GameObject::RemoveComponent(const std::shared_ptr<Component> &component) try
+    void GameObject::RemoveComponent(const std::shared_ptr<Component> &component)
     {
-        auto component_in_vector_iterator = std::find(m_components.cbegin(), m_components.cend(), component);
-        bool is_component_added = (component_in_vector_iterator != m_components.cend());
+        const auto component_in_vector_iterator = std::find(m_components.cbegin(), m_components.cend(), component);
+        const bool is_component_added = (component_in_vector_iterator != m_components.cend());
         if (!is_component_added)
         {
-            throw std::range_error("Could not find component to remove.");
+            throw ExceptionWithStacktrace("Could not find component to remove.");
         }
         (void)m_components.erase(component_in_vector_iterator);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void GameObject::RemoveComponent(std::size_t position) try
+    void GameObject::RemoveComponent(std::size_t position)
     {
-        if (position >= m_components.size())
+        const std::size_t components_size = m_components.size();
+        if (position >= components_size)
         {
-            throw std::out_of_range("Cannot remove component at " + std::to_string(position)
-                                    + " bause current object has " + std::to_string(m_components.size())
-                                    + " elements.");
+            const std::string error = std::format("Cannot remove component at position {} because current object has {} elements.",
+                                                  position, components_size);
+            throw ExceptionWithStacktrace(error);
         }
         (void)m_components.erase(m_components.begin() + position);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    nlohmann::json GameObject::Serialize() const try
+    nlohmann::json GameObject::Serialize() const
     {
         namespace Constants = GameObjectJSONConstants;
 
@@ -112,15 +148,14 @@ namespace MG3TR
 
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void GameObject::Deserialize(const nlohmann::json &json) try
+    void GameObject::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = GameObjectJSONConstants;
 
         const nlohmann::json game_object_json = json.at(Constants::k_parent_node);
         m_uid = game_object_json.at(Constants::k_uid_attribute);
-        m_name = game_object_json.at(Constants::k_name_attribute);
+        m_name = static_cast<std::string>(game_object_json.at(Constants::k_name_attribute));
 
         if (game_object_json.contains(Constants::k_components_attribute))
         {
@@ -156,7 +191,7 @@ namespace MG3TR
                 }
                 else
                 {
-                    throw std::logic_error("Invalid component to deserialize.");
+                    throw ExceptionWithStacktrace("Invalid component to deserialize.");
                 }
                 
                 component->Deserialize(component_json);
@@ -164,14 +199,12 @@ namespace MG3TR
             }
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void GameObject::LateBindAfterDeserialization(Scene &scene) try
+    void GameObject::LateBindAfterDeserialization(Scene &scene)
     {
         for (auto &component : m_components)
         {
             component->LateBindAfterDeserialization(scene);
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
 }

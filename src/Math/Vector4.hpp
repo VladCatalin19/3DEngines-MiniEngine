@@ -5,7 +5,7 @@
 
 namespace MG3TR
 {
-    using Vector4 = TVector4<float>;
+    using Vector4 = MathInternal::TVector4<float>;
 }
 
 #endif // M4GTR_SRC_MATH_VECTOR4_HPP_INCLUDED

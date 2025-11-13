@@ -1,24 +1,14 @@
 #include "Transform.hpp"
 
-#include <Components/Component.hpp>
 #include <Constants/JSONConstants.hpp>
 #include <Constants/MathConstants.hpp>
-#include <Math/Matrix4x4.hpp>
-#include <Math/Quaternion.hpp>
 #include <Math/Vector4.hpp>
 #include <Scripting/GameObject.hpp>
-
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-
-#include <algorithm>            // std::find
-#include <cstddef>              // std::size_t
-#include <memory>               // std::move, std::make_shared
-#include <stdexcept>            // std::out_of_range
-#include <string>               // std::to_string
+#include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
 {
-    Transform::Transform() noexcept
+    Transform::Transform()
         : m_local_position(Vector3Constants::k_zero),
           m_local_rotation(QuaternionConstants::k_identity),
           m_local_scale(Vector3Constants::k_one),
@@ -29,108 +19,178 @@ namespace MG3TR
         UpdateLocalToWorldAndWorldToLocalVariables();
     }
 
-    [[nodiscard]] std::shared_ptr<Transform> Transform::Create() try
+    [[nodiscard]] std::shared_ptr<Transform> Transform::Create()
     {
-        return std::shared_ptr<Transform>(new Transform());
+        auto ptr = std::shared_ptr<Transform>(new Transform());
+        return ptr;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Transform::SetLocalPosition(const Vector3 &local_position) noexcept
+    bool Transform::operator==(const Transform &other) const
+    {
+        const bool are_equal = (m_uid == other.m_uid);
+        return are_equal;
+    }
+
+    bool Transform::operator!=(const Transform &other) const
+    {
+        const bool are_not_equal = (m_uid != other.m_uid);
+        return are_not_equal;
+    }
+
+    Vector3 Transform::GetLocalPosition() const
+    {
+        return m_local_position;
+    }
+
+    void Transform::SetLocalPosition(const Vector3 &local_position)
     {
         m_local_position = local_position;
         UpdateLocalToWorldAndWorldToLocalVariablesForChildren();
     }
+
+    Quaternion Transform::GetLocalRotation() const
+    {
+        return m_local_rotation;
+    }
     
-    void Transform::SetLocalRotation(const Quaternion &local_rotation) noexcept
+    void Transform::SetLocalRotation(const Quaternion &local_rotation)
     {
         m_local_rotation = local_rotation;
         UpdateLocalToWorldAndWorldToLocalVariablesForChildren();
     }
+
+    Vector3 Transform::GetLocalScale() const
+    {
+        return m_local_scale;
+    }
     
-    void Transform::SetLocalScale(const Vector3 &local_scale) noexcept
+    void Transform::SetLocalScale(const Vector3 &local_scale)
     {
         m_local_scale = local_scale;
         UpdateLocalToWorldAndWorldToLocalVariablesForChildren();
     }
 
-    Vector3 Transform::GetWorldPosition() const noexcept
+    Vector3 Transform::GetWorldPosition() const
     {
         Vector4 position(m_local_position, 1.0F);
         position = m_local_to_world_model_matrix * position;
-        return Vector3(position.x(), position.y(), position.z());
+        const Vector3 world_position(position.x(), position.y(), position.z());
+
+        return world_position;
     }
 
-    void Transform::SetWorldPosition(const Vector3 &world_position) noexcept
+    void Transform::SetWorldPosition(const Vector3 &world_position)
     {
         Vector4 position(world_position, 1.0F);
         position = m_world_to_local_model_matrix * position;
-        SetLocalPosition(Vector3(position.x(), position.y(), position.z()));
+        const Vector3 local_position(position.x(), position.y(), position.z());
+        SetLocalPosition(local_position);
     }
     
-    Quaternion Transform::GetWorldRotation() const noexcept
+    Quaternion Transform::GetWorldRotation() const
     {
-        return m_local_to_world_rotation * m_local_rotation;
+        const auto world_rotation = m_local_to_world_rotation * m_local_rotation;
+        return world_rotation;
     }
 
-    void Transform::SetWorldRotation(const Quaternion &world_rotation) noexcept
+    void Transform::SetWorldRotation(const Quaternion &world_rotation)
     {
-        SetLocalRotation(world_rotation * m_world_to_local_rotation);
+        const auto local_rotation = world_rotation * m_world_to_local_rotation;
+        SetLocalRotation(local_rotation);
     }
     
-    Vector3 Transform::GetWorldScale() const noexcept
+    Vector3 Transform::GetWorldScale() const
     {
-        return Vector3::Scale(m_local_to_world_scale, m_local_scale);
+        const auto world_scale = Vector3::Scale(m_local_to_world_scale, m_local_scale);
+        return world_scale;
     }
 
-    void Transform::SetWorldScale(const Vector3 &world_scale) noexcept
+    void Transform::SetWorldScale(const Vector3 &world_scale)
     {
-        SetLocalScale(Vector3::Scale(m_world_to_local_scale, world_scale));
+        const auto local_scale = Vector3::Scale(m_world_to_local_scale, world_scale);
+        SetLocalScale(local_scale);
     }
     
-    Vector3 Transform::GetForwards() const noexcept
+    Vector3 Transform::GetForwards() const
     {
-        return GetWorldRotation() * Vector3Constants::k_forwards;
+        const auto forwads = GetWorldRotation() * Vector3Constants::k_forwards;
+        return forwads;
     }
 
-    Vector3 Transform::GetRight() const noexcept
+    Vector3 Transform::GetRight() const
     {
-        return GetWorldRotation() * Vector3Constants::k_right;
+        const auto right = GetWorldRotation() * Vector3Constants::k_right;
+        return right;
     }
 
-    Vector3 Transform::GetUp() const noexcept
+    Vector3 Transform::GetUp() const
     {
-        return GetWorldRotation() * Vector3Constants::k_up;
+        const auto up = GetWorldRotation() * Vector3Constants::k_up;
+        return up;
     }
 
-    Matrix4x4 Transform::GetLocalModelMatrix() const noexcept
+    Matrix4x4 Transform::GetLocalToWorldMatrix() const
     {
-        return Matrix4x4(1.0F).Translate(GetLocalPosition())
-                              .Rotate(GetLocalRotation())
-                              .Scale(GetLocalScale());
+        return m_local_to_world_model_matrix;
     }
 
-    Matrix4x4 Transform::GetWorldModelMatrix() const noexcept
+    Matrix4x4 Transform::GetWorldToLocalMatrix() const
     {
-        return Matrix4x4(1.0F).Translate(GetWorldPosition())
-                              .Rotate(GetWorldRotation())
-                              .Scale(GetWorldScale());
+        return m_world_to_local_model_matrix;
     }
 
-    Vector3 Transform::TransformPointToWorldSpace(const Vector3 &point) const noexcept
+    Matrix4x4 Transform::GetLocalModelMatrix() const
+    {
+        const auto local_position = GetLocalPosition();
+        const auto local_rotation = GetLocalRotation();
+        const auto local_scale = GetLocalScale();
+
+        auto mat = Matrix4x4(1.0F);
+        (void)mat.Translate(local_position);
+        (void)mat.Rotate(local_rotation);
+        (void)mat.Scale(local_scale);
+
+        return mat;
+    }
+
+    Matrix4x4 Transform::GetWorldModelMatrix() const
+    {
+        const auto world_position = GetWorldPosition();
+        const auto world_rotation = GetWorldRotation();
+        const auto world_scale = GetWorldScale();
+
+        auto mat = Matrix4x4(1.0F);
+        (void)mat.Translate(world_position);
+        (void)mat.Rotate(world_rotation);
+        (void)mat.Scale(world_scale);
+
+        return mat;
+    }
+
+    Vector3 Transform::TransformPointToWorldSpace(const Vector3 &point) const
     {
         Vector4 position(point, 1.0F);
         position = GetWorldModelMatrix() * position;
-        return Vector3(position.x(), position.y(), position.z());
+        const Vector3 world_space_position(position.x(), position.y(), position.z());
+
+        return world_space_position;
     }
 
-    Vector3 Transform::TransformPointToLocalSpace(const Vector3 &point) const noexcept
+    Vector3 Transform::TransformPointToLocalSpace(const Vector3 &point) const
     {
         Vector4 position(point, 1.0F);
         position = Matrix4x4::Inverse(GetWorldModelMatrix()) * position;
-        return Vector3(position.x(), position.y(), position.z());
+        const  Vector3 local_space_position(position.x(), position.y(), position.z());
+
+        return local_space_position;
     }
 
-    void Transform::SetParent(std::weak_ptr<Transform> parent) noexcept
+    std::weak_ptr<Transform> Transform::GetParent() const
+    {
+        return m_parent;
+    }
+
+    void Transform::SetParent(std::weak_ptr<Transform> parent)
     {
         if (m_parent.lock() != nullptr)
         {
@@ -147,75 +207,99 @@ namespace MG3TR
         UpdateLocalToWorldAndWorldToLocalVariables();
     }
 
-    void Transform::AddChild(const std::shared_ptr<Transform> &child) try
+    std::vector<std::shared_ptr<Transform>>& Transform::GetChildren()
     {
-        auto child_already_in_children_iterator = std::find(m_children.cbegin(), m_children.cend(), child);
-        bool is_child_added = (child_already_in_children_iterator != m_children.cend());
+        return m_children;
+    }
+
+    const std::vector<std::shared_ptr<Transform>>& Transform::GetChildren() const
+    {
+        return m_children;
+    }
+
+    std::shared_ptr<GameObject> Transform::GetGameObject() const
+    {
+        return m_game_object;
+    }
+
+    void Transform::SetGameObject(const std::shared_ptr<GameObject> &game_object)
+    {
+        m_game_object = game_object;
+    }
+
+    TUID Transform::GetUID() const
+    {
+        return m_uid;
+    }
+
+    void Transform::AddChild(const std::shared_ptr<Transform> &child)
+    {
+        const auto child_already_in_children_iterator = std::find(m_children.cbegin(), m_children.cend(), child);
+        const bool is_child_added = (child_already_in_children_iterator != m_children.cend());
 
         if (is_child_added)
         {
-            throw std::range_error("Could not add child to current transform because child"
-                                   " has already been added previously.");
+            throw ExceptionWithStacktrace("Could not add child to current transform because child"
+                                          " has already been added previously.");
         }
 
         m_children.push_back(child);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void Transform::AddChild(const std::shared_ptr<Transform> &child, std::size_t position) try
+    void Transform::AddChild(const std::shared_ptr<Transform> &child, const std::size_t position)
     {
-        auto child_already_in_children_iterator = std::find(m_children.cbegin(), m_children.cend(), child);
-        bool is_child_added = (child_already_in_children_iterator != m_children.cend());
+        const auto child_already_in_children_iterator = std::find(m_children.cbegin(), m_children.cend(), child);
+        const bool is_child_added = (child_already_in_children_iterator != m_children.cend());
 
         if (is_child_added)
         {
-            throw std::range_error("Could not add child to current transform because child"
-                                   " has already been added previously.");
+            throw ExceptionWithStacktrace("Could not add child to current transform because child"
+                                          " has already been added previously.");
         }
 
-        if (position > m_children.size())
+        const std::size_t children_size = m_children.size();
+        if (position > children_size)
         {
-            throw std::out_of_range("Could not add child at index " + std::to_string(position) + ".");
+            const std::string string = std::format("Could not add child at index {}.", position);
+            throw ExceptionWithStacktrace(string);
         }
 
         (void)m_children.insert(m_children.begin() + position, child);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Transform::RemoveChild(const std::shared_ptr<Transform> &child) try
+    void Transform::RemoveChild(const std::shared_ptr<Transform> &child)
     {
-        auto child_already_in_children_iterator = std::find(m_children.cbegin(), m_children.cend(), child);
-        bool is_child_added = (child_already_in_children_iterator != m_children.cend());
+        const auto child_already_in_children_iterator = std::find(m_children.cbegin(), m_children.cend(), child);
+        const bool is_child_added = (child_already_in_children_iterator != m_children.cend());
 
         if (!is_child_added)
         {
-            throw std::range_error("Could not find child to remove.");
+            throw ExceptionWithStacktrace("Could not find child to remove.");
         }
 
         (void)m_children.erase(child_already_in_children_iterator);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Transform::RemoveChild(std::size_t position) try
+    void Transform::RemoveChild(const std::size_t position)
     {
-        if (position >= m_children.size())
+        const std::size_t children_size = m_children.size();
+        if (position >= children_size)
         {
-            throw std::out_of_range("Cannot remove child at " + std::to_string(position)
-                                    + " bause current transform has " + std::to_string(m_children.size())
-                                    + " children.");
+            const std::string string = std::format("Cannot remove child at position {} bause current transform has {} children.",
+                                                   position, children_size);
+            throw ExceptionWithStacktrace(string);
         }
         (void)m_children.erase(m_children.begin() + position);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    Matrix4x4 Transform::CalculateLocalToWorldModelMatrix() const noexcept
+    Matrix4x4 Transform::CalculateLocalToWorldModelMatrix() const
     {
         Matrix4x4 local_matrix(1.0F);
         auto parent = m_parent;
 
         while (parent.lock() != nullptr)
         {
-            Matrix4x4 parent_local_matrix = parent.lock()->GetLocalModelMatrix();
+            const Matrix4x4 parent_local_matrix = parent.lock()->GetLocalModelMatrix();
             local_matrix = parent_local_matrix * local_matrix;
             parent = parent.lock()->m_parent;
         }
@@ -223,17 +307,21 @@ namespace MG3TR
         return local_matrix;
     }
 
-    Matrix4x4 Transform::CalculateWorldToLocalModelMatrix() const noexcept
+    Matrix4x4 Transform::CalculateWorldToLocalModelMatrix() const
     {
-        return Matrix4x4::Inverse(CalculateLocalToWorldModelMatrix());
+        const auto local_to_world = CalculateLocalToWorldModelMatrix();
+        const auto inverse = Matrix4x4::Inverse(local_to_world);
+
+        return inverse;
     }
 
-    Matrix4x4 Transform::CalculateWorldToLocalModelMatrix(const Matrix4x4 &local_to_world) const noexcept
+    Matrix4x4 Transform::CalculateWorldToLocalModelMatrix(const Matrix4x4 &local_to_world) const
     {
-        return Matrix4x4::Inverse(local_to_world);
+        const auto inverse = Matrix4x4::Inverse(local_to_world);
+        return inverse;
     }
     
-    Quaternion Transform::CalculateLocalToWorldRotation() const noexcept
+    Quaternion Transform::CalculateLocalToWorldRotation() const
     {
         Quaternion q = QuaternionConstants::k_identity;
         
@@ -241,7 +329,7 @@ namespace MG3TR
 
         while (parent.lock() != nullptr)
         {
-            Quaternion parent_rotation = parent.lock()->GetLocalRotation();
+            const Quaternion parent_rotation = parent.lock()->GetLocalRotation();
             q *= parent_rotation;
             parent = parent.lock()->m_parent;
         }
@@ -249,17 +337,20 @@ namespace MG3TR
         return q;
     }
     
-    Quaternion Transform::CalculateWorldToLocalRotation() const noexcept
+    Quaternion Transform::CalculateWorldToLocalRotation() const
     {
-        return Quaternion::Inverse(CalculateLocalToWorldRotation());
+        const auto local_to_world = CalculateLocalToWorldRotation();
+        const auto inverse = Quaternion::Inverse(local_to_world);
+        return inverse;
     }
 
-    Quaternion Transform::CalculateWorldToLocalRotation(const Quaternion &local_rotation) const noexcept
+    Quaternion Transform::CalculateWorldToLocalRotation(const Quaternion &local_rotation) const
     {
-        return Quaternion::Inverse(local_rotation);
+        const auto inverse = Quaternion::Inverse(local_rotation);
+        return inverse;
     }
     
-    Vector3 Transform::CalculateLocalToWorldScale() const noexcept
+    Vector3 Transform::CalculateLocalToWorldScale() const
     {
         Vector3 scale = Vector3Constants::k_one;
 
@@ -267,7 +358,7 @@ namespace MG3TR
 
         while (parent.lock() != nullptr)
         {
-            Vector3 parent_scale = parent.lock()->GetLocalScale();
+            const Vector3 parent_scale = parent.lock()->GetLocalScale();
             scale.Scale(parent_scale);
             parent = parent.lock()->m_parent;
         }
@@ -275,18 +366,21 @@ namespace MG3TR
         return scale;
     }
     
-    Vector3 Transform::CalculateWorldToLocalScale() const noexcept
+    Vector3 Transform::CalculateWorldToLocalScale() const
     {
-        Vector3 scale = CalculateLocalToWorldScale();
-        return Vector3(1.0F / scale.x(), 1.0F / scale.y(), 1.0F / scale.z());
+        const Vector3 scale = CalculateLocalToWorldScale();
+        const Vector3 inverse(1.0F / scale.x(), 1.0F / scale.y(), 1.0F / scale.z());
+
+        return inverse;
     }
 
-    Vector3 Transform::CalculateWorldToLocalScale(const Vector3 &local_scale) const noexcept
+    Vector3 Transform::CalculateWorldToLocalScale(const Vector3 &local_scale) const
     {
-        return Vector3(1.0F / local_scale.x(), 1.0F / local_scale.y(), 1.0F / local_scale.z());
+        const Vector3 inverse(1.0F / local_scale.x(), 1.0F / local_scale.y(), 1.0F / local_scale.z());
+        return inverse;
     }
 
-    void Transform::UpdateLocalToWorldAndWorldToLocalVariables() noexcept
+    void Transform::UpdateLocalToWorldAndWorldToLocalVariables()
     {
         m_local_to_world_model_matrix = CalculateLocalToWorldModelMatrix();
         m_world_to_local_model_matrix = CalculateWorldToLocalModelMatrix(m_local_to_world_model_matrix);
@@ -298,7 +392,7 @@ namespace MG3TR
         m_world_to_local_scale = CalculateWorldToLocalScale(m_local_to_world_scale);
     }
 
-    void Transform::UpdateLocalToWorldAndWorldToLocalVariablesForChildren() noexcept
+    void Transform::UpdateLocalToWorldAndWorldToLocalVariablesForChildren()
     {
         for (auto &child : m_children)
         {
@@ -315,7 +409,7 @@ namespace MG3TR
         }
     }
 
-    nlohmann::json Transform::Serialize() const try
+    nlohmann::json Transform::Serialize() const
     {
         namespace Constants = TransformJSONConstants;
 
@@ -352,9 +446,8 @@ namespace MG3TR
 
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Transform::Deserialize(const nlohmann::json &json) try
+    void Transform::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = TransformJSONConstants;
 
@@ -399,9 +492,8 @@ namespace MG3TR
             m_game_object->Deserialize(transform_json);
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Transform::LateBindAfterDeserialization(Scene &scene) try
+    void Transform::LateBindAfterDeserialization(Scene &scene)
     {
         if (m_game_object != nullptr)
         {
@@ -412,5 +504,4 @@ namespace MG3TR
             child->LateBindAfterDeserialization(scene);
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
 }

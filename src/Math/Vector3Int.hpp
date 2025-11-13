@@ -5,7 +5,7 @@
 
 namespace MG3TR
 {
-    using Vector3Int = TVector3<int>;
+    using Vector3Int = MathInternal::TVector3<int>;
 }
 
 #endif // M3GTR_SRC_MATH_VECTOR3_HPP_INCLUDED

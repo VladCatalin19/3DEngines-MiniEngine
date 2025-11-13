@@ -1,11 +1,12 @@
 #ifndef MG3TR_SRC_MATH_FRUSTUM_HPP_INCLUDED
 #define MG3TR_SRC_MATH_FRUSTUM_HPP_INCLUDED
 
-#include <Components/Camera.hpp>
 #include <Math/Plane.hpp>
 
 namespace MG3TR
 {
+    class Camera;
+
     class Frustum
     {
     private:
@@ -19,16 +20,23 @@ namespace MG3TR
         Plane m_near_face;
 
     public:
-        Frustum(const Camera &camera);
+        Frustum(const Camera& camera);
+        ~Frustum() = default;
 
-        Plane GetTopFace() const noexcept { return m_top_face; }
-        Plane GetBottomFace() const noexcept { return m_bottom_face; }
+        Frustum(const Frustum&) = default;
+        Frustum(Frustum&&) = default;
 
-        Plane GetRightFace() const noexcept { return m_right_face; }
-        Plane GetLeftFace() const noexcept { return m_left_face; }
+        Frustum& operator=(const Frustum&) = default;
+        Frustum& operator=(Frustum&&) = default;
 
-        Plane GetFarFace() const noexcept { return m_far_face; }
-        Plane GetNearFace() const noexcept { return m_near_face; }
+        Plane GetTopFace() const;
+        Plane GetBottomFace() const;
+
+        Plane GetRightFace() const;
+        Plane GetLeftFace() const;
+
+        Plane GetFarFace() const;
+        Plane GetNearFace() const;
     };
 }
 

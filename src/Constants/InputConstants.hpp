@@ -4,28 +4,17 @@
 #include <Window/Key.hpp>
 #include <Window/MouseButton.hpp>
 
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include <cstddef>                  // std::size_t
-#include <unordered_map>            // std::unordered_map
+#include <unordered_map>
 
 namespace MG3TR::InputConstants
 {
-    constexpr Key k_all_keys[] = {
-        ALL_KEY_CODES(Key::)
-    };
+    const std::size_t k_keys_number = 105;
+    const std::size_t k_mouse_buttons_number = 8;
 
-    constexpr std::size_t k_keys_number = sizeof(k_all_keys) / sizeof(Key);
-
-    constexpr MouseButton k_all_mouse_buttons[] = {
-        ALL_MOUSE_BUTTONS(MouseButton::)
-    };
-
-    constexpr std::size_t k_mouse_buttons_number = sizeof(k_all_mouse_buttons) / sizeof(MouseButton);
-
-    const inline std::unordered_map<int, Key> k_glfw_keys_to_input_keys = {
-        { GLFW_KEY_UNKNOWN, Key::Unkown },
+    const std::unordered_map<int, Key> k_glfw_keys_to_input_keys = {
+        { GLFW_KEY_UNKNOWN, Key::Unknown },
         { GLFW_KEY_SPACE, Key::Space },
         { GLFW_KEY_APOSTROPHE, Key::Aposthrophe },
         { GLFW_KEY_COMMA, Key::Comma },
@@ -144,7 +133,7 @@ namespace MG3TR::InputConstants
         { GLFW_KEY_RIGHT_SUPER, Key::RightSuper }
     };
 
-    const inline std::unordered_map<int, MouseButton> k_glfw_mouse_buttons_to_input_mouse_buttons = {
+    const std::unordered_map<int, MouseButton> k_glfw_mouse_buttons_to_input_mouse_buttons = {
         { GLFW_MOUSE_BUTTON_LEFT, MouseButton::Left },
         { GLFW_MOUSE_BUTTON_RIGHT, MouseButton::Right },
         { GLFW_MOUSE_BUTTON_MIDDLE, MouseButton::Middle },

@@ -5,11 +5,11 @@
 #include <Window/Input.hpp>
 
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>         // GLFWwindow
+#include <GLFW/glfw3.h>
 
-#include <chrono>               // std::chrono::system_clock::time_point
-#include <memory>               // std::unique_ptr
-#include <string>               // std::string
+#include <chrono>
+#include <memory>
+#include <string>
 
 namespace MG3TR
 {
@@ -22,8 +22,8 @@ namespace MG3TR
         std::unique_ptr<Scene> m_scene;
 
     public:
-        Window(int height, int width, const std::string &name);
-        virtual ~Window() noexcept;
+        Window(const int height, const int width, const std::string &name);
+        virtual ~Window();
 
         Window(const Window &) = delete;
         Window& operator=(const Window &) = delete;

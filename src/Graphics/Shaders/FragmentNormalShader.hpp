@@ -1,16 +1,16 @@
 #ifndef MG3TR_SRC_GRAPHICS_SHADERS_FRAGMENTNORMALSHADER_HPP_INCLUDED
 #define MG3TR_SRC_GRAPHICS_SHADERS_FRAGMENTNORMALSHADER_HPP_INCLUDED
 
-#include <Components/Camera.hpp>
 #include <Graphics/Shader.hpp>
-#include <Scripting/Transform.hpp>
+#include <Utils/TUID.hpp>
 
-#include <Constants/GraphicsConstants.hpp>
-
-#include <memory>               // std::weak_ptr
+#include <memory>
 
 namespace MG3TR
 {
+    class Camera;
+    class Transform;
+
     class FragmentNormalShader : public Shader
     {
     private:
@@ -23,7 +23,7 @@ namespace MG3TR
     public:
         FragmentNormalShader();
         FragmentNormalShader(const std::weak_ptr<Camera> &camera, const std::weak_ptr<Transform> &object_transform);
-        virtual ~FragmentNormalShader() noexcept = default;
+        virtual ~FragmentNormalShader() = default;
 
         FragmentNormalShader(const FragmentNormalShader &) = default;
         FragmentNormalShader& operator=(const FragmentNormalShader &) = default;

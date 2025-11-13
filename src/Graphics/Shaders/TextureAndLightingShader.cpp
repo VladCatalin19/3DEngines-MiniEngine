@@ -1,12 +1,13 @@
 #include "TextureAndLightingShader.hpp"
+#include "Utils/ExceptionWithStacktrace.hpp"
 
+#include <Components/Camera.hpp>
 #include <Constants/GraphicsConstants.hpp>
 #include <Constants/JSONConstants.hpp>
+#include <Graphics/Texture.hpp>
 #include <Scene/Scene.hpp>
-
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-
-#include <memory>           // std::make_shared
+#include <Scripting/Transform.hpp>
+#include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
 {
@@ -20,7 +21,7 @@ namespace MG3TR
     TextureAndLightingShader::TextureAndLightingShader(const std::weak_ptr<Camera> &camera,
                                                        const std::weak_ptr<Transform> &object_transform,
                                                        const std::shared_ptr<Texture> &texture,
-                                                       const Vector3 &light_position) try
+                                                       const Vector3 &light_position)
         : Shader(ShaderConstants::k_texture_and_lighting_vertex_shader, 
                  ShaderConstants::k_texture_and_lighting_fragment_shader),
           m_camera(camera),
@@ -37,30 +38,28 @@ namespace MG3TR
             m_object_transform_uid = object_transform.lock()->GetUID();
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void TextureAndLightingShader::SetUniforms() try
+    void TextureAndLightingShader::SetUniforms()
     {
-        auto model = m_object_transform.lock()->GetWorldModelMatrix();
-        auto view = m_camera.lock()->GetViewMatrix();
-        auto projection = m_camera.lock()->GetProjectionMatrix();
+        const auto model = m_object_transform.lock()->GetWorldModelMatrix();
+        const auto view = m_camera.lock()->GetViewMatrix();
+        const auto projection = m_camera.lock()->GetProjectionMatrix();
+        const auto camera_world_position = m_camera.lock()->GetTransform().lock()->GetWorldPosition();
 
         SetUniformMatrix4x4(ShaderConstants::k_model_uniform_location, model);
         SetUniformMatrix4x4(ShaderConstants::k_view_uniform_location, view);
         SetUniformMatrix4x4(ShaderConstants::k_projection_uniform_location, projection);
 
-        SetUniformVector3(ShaderConstants::k_camera_position_uniform_location, m_camera.lock()->GetTransform().lock()->GetWorldPosition());
+        SetUniformVector3(ShaderConstants::k_camera_position_uniform_location, camera_world_position);
         SetUniformVector3(ShaderConstants::k_light_position_uniform_location, m_light_position);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void TextureAndLightingShader::BindAdditionals() try
+    void TextureAndLightingShader::BindAdditionals()
     {
         m_texture->Bind();
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    nlohmann::json TextureAndLightingShader::Serialize() const try
+    nlohmann::json TextureAndLightingShader::Serialize() const
     {
         namespace Constants = TextureAndLightingShaderJSONConstants;
         
@@ -75,9 +74,8 @@ namespace MG3TR
 
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void TextureAndLightingShader::Deserialize(const nlohmann::json &json) try
+    void TextureAndLightingShader::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = TextureAndLightingShaderJSONConstants;
         
@@ -92,21 +90,19 @@ namespace MG3TR
         m_light_position.y() = light_position_json.at(1);
         m_light_position.z() = light_position_json.at(2);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void TextureAndLightingShader::LateBindAfterDeserialization(Scene &scene) try
+    void TextureAndLightingShader::LateBindAfterDeserialization(Scene &scene)
     {
-        m_camera= scene.FindCameraWithUID(m_camera_uid);
+        m_camera = scene.FindCameraWithUID(m_camera_uid);
         if (m_camera.lock() == nullptr)
         {
-            throw std::logic_error("Could not find camera with UID " + std::to_string(m_camera_uid) + " in scene.");
+            throw ExceptionWithStacktrace("Could not find camera with UID " + std::to_string(m_camera_uid) + " in scene.");
         }
 
         m_object_transform = scene.FindTransformWithUID(m_object_transform_uid);
         if (m_object_transform.lock() == nullptr)
         {
-            throw std::logic_error("Could not find object transform with UID " + std::to_string(m_camera_uid) + " in scene.");
+            throw ExceptionWithStacktrace("Could not find object transform with UID " + std::to_string(m_camera_uid) + " in scene.");
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
 }

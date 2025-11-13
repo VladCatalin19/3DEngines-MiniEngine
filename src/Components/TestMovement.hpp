@@ -3,7 +3,6 @@
 
 #include "Component.hpp"
 
-#include <Constants/MathConstants.hpp>
 #include <Math/Vector3.hpp>
 
 namespace MG3TR
@@ -14,22 +13,20 @@ namespace MG3TR
         Vector3 m_initial_local_position;
         float m_total_time;
 
+        static constexpr float k_movement_sensitivity = 0.4F;
+
     public:
-        TestMovement(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept
-            : Component(game_object, transform),
-              m_initial_local_position(Vector3Constants::k_zero),
-              m_total_time(0.0F)
-        {}
-        virtual ~TestMovement() noexcept = default;
+        TestMovement(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform);
+        virtual ~TestMovement() = default;
 
         TestMovement(const TestMovement &) = delete;
+        TestMovement(TestMovement &&) = default;
+        
         TestMovement& operator=(const TestMovement &) = delete;
-
-        TestMovement(TestMovement &&) noexcept = default;
-        TestMovement& operator=(TestMovement &&) noexcept = default;
+        TestMovement& operator=(TestMovement &&) = default;
 
         virtual void Initialize() override;
-        virtual void FrameUpdate(float delta_time) override;
+        virtual void FrameUpdate(const float delta_time) override;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;

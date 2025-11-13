@@ -2,15 +2,16 @@
 #define MG3TR_SRC_COMPONENTS_MESHRENDERER_HPP_INCLUDED
 
 #include <Components/Component.hpp>
-#include <Components/Camera.hpp>
-#include <Graphics/Mesh.hpp>
-#include <Graphics/Shader.hpp>
 #include <Math/Sphere.hpp>
 
-#include <memory>               // std::shared_ptr, std::weak_ptr
+#include <memory>
 
 namespace MG3TR
 {
+    class Mesh;
+    class Shader;
+    class Camera;
+
     class MeshRenderer : public Component
     {
     private:
@@ -22,24 +23,22 @@ namespace MG3TR
         TUID m_camera_uid;
 
     public:
-        MeshRenderer(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept
-            : Component(game_object, transform)
-        {}
+        MeshRenderer(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform);
 
         MeshRenderer(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
                      const std::shared_ptr<Mesh> &mesh, const std::shared_ptr<Shader> &shader,
-                     const std::weak_ptr<Camera> &camera, bool use_frustum_culling = true);
-        virtual ~MeshRenderer() noexcept = default;
+                     const std::weak_ptr<Camera> &camera, const bool use_frustum_culling = true);
+        virtual ~MeshRenderer() = default;
 
         MeshRenderer(const MeshRenderer &) = delete;
+        MeshRenderer(MeshRenderer &&) = default;
+        
         MeshRenderer& operator=(const MeshRenderer &) = delete;
+        MeshRenderer& operator=(MeshRenderer &&) = default;
 
-        MeshRenderer(MeshRenderer &&) noexcept = default;
-        MeshRenderer& operator=(MeshRenderer &&) noexcept = default;
+        Sphere GetBoundingSphere() const;
 
-        Sphere GetBoundingSphere() const noexcept { return m_mesh_bounding_sphere; }
-
-        virtual void FrameEnd(float) override;
+        virtual void FrameEnd([[maybe_unused]] const float delta_time) override;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;
@@ -48,7 +47,7 @@ namespace MG3TR
     private:
         void Construct(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
                        const std::shared_ptr<Mesh> &mesh, const std::shared_ptr<Shader> &shader,
-                       const std::weak_ptr<Camera> &camera, bool use_frustum_culling);
+                       const std::weak_ptr<Camera> &camera, const bool use_frustum_culling);
     };
 }
 

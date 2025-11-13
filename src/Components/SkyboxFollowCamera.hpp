@@ -3,7 +3,7 @@
 
 #include "Component.hpp"
 
-#include <memory>               // std::weak_ptr
+#include <memory>
 
 namespace MG3TR
 {
@@ -14,19 +14,17 @@ namespace MG3TR
         TUID m_camera_uid;
 
     public:
-        SkyboxFollowCamera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept
-            : Component(game_object, transform)
-        {}
+        SkyboxFollowCamera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform);
 
         SkyboxFollowCamera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
-                           const std::weak_ptr<Transform> &camera) noexcept;
-        virtual ~SkyboxFollowCamera() noexcept = default;
+                           const std::weak_ptr<Transform> &camera);
+        virtual ~SkyboxFollowCamera() = default;
 
         SkyboxFollowCamera(const SkyboxFollowCamera &) = delete;
+        SkyboxFollowCamera(SkyboxFollowCamera &&) = default;
+        
         SkyboxFollowCamera& operator=(const SkyboxFollowCamera &) = delete;
-
-        SkyboxFollowCamera(SkyboxFollowCamera &&) noexcept = default;
-        SkyboxFollowCamera& operator=(SkyboxFollowCamera &&) noexcept = default;
+        SkyboxFollowCamera& operator=(SkyboxFollowCamera &&) = default;
 
         virtual void FrameUpdate(float delta_time) override;
 

@@ -6,7 +6,7 @@
 #include <Math/Vector3.hpp>
 #include <Math/Matrix4x4.hpp>
 
-#include <memory>               // std::weak_ptr
+#include <memory>
 
 namespace MG3TR
 {
@@ -36,53 +36,35 @@ namespace MG3TR
         float m_zfar;
 
     public:
-        Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept
-            : Component(game_object, transform)
-        {}
+        Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform);
 
         Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
-               float fov, float aspect_ratio, float znear, float zfar) noexcept
-            : Component(game_object, transform),
-              m_camera_mode(CameraMode::Perspective),
-              m_fov(fov),
-              m_aspect_ratio(aspect_ratio),
-              m_znear(znear),
-              m_zfar(zfar)
-        {}
+               const float fov, const float aspect_ratio, const float znear, const float zfar);
 
         Camera(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
-               float xmin, float xmax, float ymin, float ymax, float znear, float zfar) noexcept
-            : Component(game_object, transform),
-              m_camera_mode(CameraMode::Orthographic),
-              m_xmin(xmin),
-              m_xmax(xmax),
-              m_ymin(ymin),
-              m_ymax(ymax),
-              m_znear(znear),
-              m_zfar(zfar)
-        {}
-        virtual ~Camera() noexcept = default;
+               const float xmin, const float xmax, const float ymin, const float ymax, const float znear, const float zfar);
+        virtual ~Camera() = default;
 
         Camera(const Camera &) = delete;
+        Camera(Camera &&) = default;
+        
         Camera& operator=(const Camera &) = delete;
+        Camera& operator=(Camera &&) = default;
 
-        Camera(Camera &&) noexcept = default;
-        Camera& operator=(Camera &&) noexcept = default;
-
-        Matrix4x4 GetViewMatrix() const noexcept;
+        Matrix4x4 GetViewMatrix() const;
         Matrix4x4 GetProjectionMatrix() const;
 
-        CameraMode GetCameraMode() const noexcept { return m_camera_mode; }
-        float GetFov() const noexcept { return m_fov; }
-        float GetAspectRatio() const noexcept { return m_aspect_ratio; }
+        CameraMode GetCameraMode() const;
+        float GetFov() const;
+        float GetAspectRatio() const;
 
-        float GetXmin() const noexcept { return m_xmin; }
-        float GetXmax() const noexcept { return m_xmax; }
-        float GetYmin() const noexcept { return m_ymin; }
-        float GetYmax() const noexcept { return m_ymax; }
+        float GetXmin() const;
+        float GetXmax() const;
+        float GetYmin() const;
+        float GetYmax() const;
 
-        float GetZnear() const noexcept { return m_znear; }
-        float GetZfar() const noexcept { return m_zfar; }
+        float GetZnear() const;
+        float GetZfar() const;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;

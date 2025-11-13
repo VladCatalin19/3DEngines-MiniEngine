@@ -8,7 +8,7 @@
 
 #include <Math/Vector2.hpp>
 
-#include <bitset>               // std::bitset
+#include <bitset>
 
 namespace MG3TR
 {
@@ -26,30 +26,30 @@ namespace MG3TR
         float m_scroll_offset;
 
     public:
-        Input() noexcept = default;
-        virtual ~Input() noexcept = default;
+        Input()= default;
+        virtual ~Input() = default;
 
         Input(const Input &) = delete;
         Input& operator=(const Input &) = delete;
 
-        Input(Input &&) noexcept = default;
-        Input& operator=(Input &&) noexcept = default;
+        Input(Input &&) = default;
+        Input& operator=(Input &&) = default;
 
-        bool IsKeyPressed(Key key) const noexcept;
-        bool IsMouseButtonPressed(MouseButton mouse_button) const noexcept;
+        bool IsKeyPressed(const Key key) const;
+        bool IsMouseButtonPressed(const MouseButton mouse_button) const;
 
-        bool IsKeyReleased(Key key) const noexcept;
-        bool IsMouseButtonReleased(MouseButton mouse_button) const noexcept;
+        bool IsKeyReleased(const Key key) const;
+        bool IsMouseButtonReleased(const MouseButton mouse_button) const;
 
-        bool IsKeyHold(Key key) const noexcept;
-        bool IsMouseButtonHold(MouseButton mouse_button) const noexcept;
+        bool IsKeyHold(const Key key) const;
+        bool IsMouseButtonHold(const MouseButton mouse_button) const;
 
-        Vector2 GetMousePosition() const noexcept;
+        Vector2 GetMousePosition() const;
 
-        void UpdateKeyState(Key key, bool state);
-        void UpdateMouseButtonState(MouseButton mouse_button, bool state);
-        void UpdateMousePosition(Vector2 position) noexcept;
-        void UpdateScrollOffset(float offset) noexcept;
+        void UpdateKeyState(const Key key, const bool state);
+        void UpdateMouseButtonState(const MouseButton mouse_button, const bool state);
+        void UpdateMousePosition(const Vector2 position);
+        void UpdateScrollOffset(const float offset);
     };
 }
 

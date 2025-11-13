@@ -1,20 +1,18 @@
 #include "Texture.hpp"
 
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-#include <Utils/PrintGLErrors.hpp>              // PRINT_GL_ERRORS_IF_ANY
+#include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/PrintGLErrors.hpp>
 
-#include <glad/glad.h>          // GLuint
+#include <glad/glad.h>
 #define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>      // stb_*
+#include <stb/stb_image.h>
 
-#include <cstring>              // std::memcpy
-#include <stdexcept>            // std::logic_error
-#include <string>               // std::string, std::size_t
+#include <cstring>
 
-static constexpr GLint k_internal_formats[] = { 0, GL_R8, GL_RG8, GL_RGB8, GL_RGBA8 };
-static constexpr GLint k_pixel_format[] = { 0, GL_RED, GL_RG, GL_RGB, GL_RGBA };
+static const GLint k_internal_formats[] = { 0, GL_R8, GL_RG8, GL_RGB8, GL_RGBA8 };
+static const GLint k_pixel_format[] = { 0, GL_RED, GL_RG, GL_RGB, GL_RGBA };
 
-static GLuint CreateTextureID(int width, int height, int color_channels, unsigned char *image) try
+static GLuint CreateTextureID(const int width, const int height, const int color_channels, const unsigned char *const image)
 {
     GLuint id = 0;
 
@@ -56,63 +54,58 @@ static GLuint CreateTextureID(int width, int height, int color_channels, unsigne
 
     return id;
 }
-CATCH_RETHROW_EXCEPTIONS
 
 namespace MG3TR
 {
-    Texture::Texture(const std::string &path_to_file) try
+    Texture::Texture(const std::string &path_to_file)
         : m_image(nullptr),
           m_id(0),
           m_path_to_file(path_to_file)
     {
         LoadImage(path_to_file);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    Texture::~Texture() noexcept
+    Texture::~Texture()
     {
         FreeMemory();
     }
     
-    Texture::Texture(const Texture &other) try
+    Texture::Texture(const Texture &other)
     {
         CopyFrom(other);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    Texture& Texture::operator=(const Texture &other) try
-    {
-        CopyFrom(other);
-        return *this;
-    }
-    CATCH_RETHROW_EXCEPTIONS
-
-    Texture::Texture(Texture &&other) noexcept
+    Texture::Texture(Texture &&other)
     {
         MoveFrom(std::move(other));
     }
 
-    Texture& Texture::operator=(Texture &&other) noexcept
+    Texture& Texture::operator=(const Texture &other)
+    {
+        CopyFrom(other);
+        return *this;
+    }
+
+    Texture& Texture::operator=(Texture &&other)
     {
         MoveFrom(std::move(other));
         return *this;
     }
 
-    void Texture::LoadImage(const std::string &path_to_file) try
+    void Texture::LoadImage(const std::string &path_to_file)
     {
         FreeMemory();
 
         m_image = stbi_load(path_to_file.c_str(), &m_width, &m_height, &m_color_channels, 0);
         if (m_image == nullptr)
         {
-            throw std::logic_error("Could not read image at \"" + path_to_file + "\".");
+            throw ExceptionWithStacktrace("Could not read image at \"" + path_to_file + "\".");
         }
 
         m_id = CreateTextureID(m_width, m_height, m_color_channels, m_image);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void Texture::Bind(unsigned texture_unit_id) try
+    void Texture::Bind(const unsigned texture_unit_id)
     {
         glActiveTexture(GL_TEXTURE0 + texture_unit_id);
         PRINT_GL_ERRORS_IF_ANY();
@@ -120,9 +113,13 @@ namespace MG3TR
         glBindTexture(GL_TEXTURE_2D, m_id);
         PRINT_GL_ERRORS_IF_ANY();
     }
-    CATCH_RETHROW_EXCEPTIONS
+
+    const std::string& Texture::GetPathToFile() const
+    {
+        return m_path_to_file;
+    }
     
-    void Texture::FreeMemory() noexcept
+    void Texture::FreeMemory()
     {
         stbi_image_free(m_image);
 
@@ -136,15 +133,15 @@ namespace MG3TR
         m_id = 0;
     }
 
-    void Texture::CopyFrom(const Texture &other) try
+    void Texture::CopyFrom(const Texture &other)
     {
         m_width = other.m_width;
         m_height = other.m_height;
         m_color_channels = other.m_color_channels;
 
-        std::size_t image_size = static_cast<unsigned>(m_width)
-                                 * static_cast<unsigned>(m_height)
-                                 * static_cast<unsigned>(m_color_channels);
+        const std::size_t image_size = static_cast<unsigned>(m_width)
+                                       * static_cast<unsigned>(m_height)
+                                       * static_cast<unsigned>(m_color_channels);
 
         m_image = static_cast<unsigned char *>(stbi__malloc(image_size));
 
@@ -154,9 +151,8 @@ namespace MG3TR
 
         m_path_to_file = other.m_path_to_file;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Texture::MoveFrom(Texture &&other) noexcept
+    void Texture::MoveFrom(Texture &&other)
     {
         m_width = other.m_width;
         m_height = other.m_height;

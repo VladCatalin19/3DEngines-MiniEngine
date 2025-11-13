@@ -1,33 +1,32 @@
 #include "Shader.hpp"
+#include "Utils/ExceptionWithStacktrace.hpp"
 
 #include <Constants/JSONConstants.hpp>
 
-#include <glad/glad.h>                          // GLchar
+#include <glad/glad.h>
 
-#include <Utils/CatchAndRethrowExceptions.hpp>  // CATCH_RETHROW_EXCEPTIONS
-#include <Utils/PrintGLErrors.hpp>              // PRINT_GL_ERRORS_IF_ANY
+#include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/PrintGLErrors.hpp>
 
-#include <fstream>              // std::ifstream
-#include <iterator>             // std::istreambuf_iterator
-#include <stdexcept>            // std::ios_base::failure
-#include <string>               // std::string
-#include <vector>               // std::vector
+#include <fstream>
+#include <iterator>
+#include <vector>
 
-static std::string ReadFileInString(const std::string &file_name) try
+static std::string ReadFileInString(const std::string &file_name)
 {
     std::ifstream input_stream(file_name);
 
     if (input_stream.fail())
     {
-        throw std::ios_base::failure("Could not open \"" + file_name + "\".");
+        throw MG3TR::ExceptionWithStacktrace("Could not open \"" + file_name + "\".");
     }
 
-    return std::string(std::istreambuf_iterator<char>{input_stream}, {});
+    const std::string file_content(std::istreambuf_iterator<char>{input_stream}, {});
+    return file_content;
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static GLuint CreateShader(GLenum shader_type, const std::string &shader_code,
-                           const std::string &shader_path) try
+static GLuint CreateShader(const GLenum shader_type, const std::string &shader_code,
+                           const std::string &shader_path)
 {
     GLuint shader = glCreateShader(shader_type);
     PRINT_GL_ERRORS_IF_ANY();
@@ -42,7 +41,7 @@ static GLuint CreateShader(GLenum shader_type, const std::string &shader_code,
     glGetShaderiv(shader, GL_COMPILE_STATUS, &is_compiled);
     PRINT_GL_ERRORS_IF_ANY();
 
-    if(is_compiled == GL_FALSE)
+    if (is_compiled == GL_FALSE)
     {
         GLint max_length = 0;
         glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
@@ -54,16 +53,15 @@ static GLuint CreateShader(GLenum shader_type, const std::string &shader_code,
 
         glDeleteShader(shader);
         PRINT_GL_ERRORS_IF_ANY();
-        throw std::runtime_error("Could not compile \"" + shader_path + "\": " + &error_log[0]);
+        throw MG3TR::ExceptionWithStacktrace("Could not compile \"" + shader_path + "\": " + &error_log[0]);
     }
 
     return shader;
 }
-CATCH_RETHROW_EXCEPTIONS
 
-static GLuint CreateShaderProgram(GLuint vertex_shader, GLuint geometry_shader, GLuint fragment_shader)
+static GLuint CreateShaderProgram(const GLuint vertex_shader, const GLuint geometry_shader, const GLuint fragment_shader)
 {
-    GLuint program = glCreateProgram();
+    const GLuint program = glCreateProgram();
     PRINT_GL_ERRORS_IF_ANY();
 
     glAttachShader(program, vertex_shader);
@@ -86,20 +84,18 @@ static GLuint CreateShaderProgram(GLuint vertex_shader, GLuint geometry_shader, 
 
 namespace MG3TR
 {
-    Shader::Shader(const std::string &vertex_shader_path, const std::string &fragment_shader_path) try
+    Shader::Shader(const std::string &vertex_shader_path, const std::string &fragment_shader_path)
     {
         Construct(vertex_shader_path, fragment_shader_path);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
     Shader::Shader(const std::string &vertex_shader_path, const std::string &geometry_shader_path,
-                   const std::string &fragment_shader_path) try
+                   const std::string &fragment_shader_path)
     {
         Construct(vertex_shader_path, geometry_shader_path, fragment_shader_path);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    Shader::~Shader() noexcept
+    Shader::~Shader()
     {
         if (m_vertex_shader > 0)
         {
@@ -136,102 +132,128 @@ namespace MG3TR
         }
     }
 
-    Shader::Shader(const Shader &other) try
+    Shader::Shader(const Shader &other)
     {
         CopyFrom(other);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    Shader& Shader::operator=(const Shader &other) try
+    Shader::Shader(Shader &&other)
+    {
+        MoveFrom(std::move(other));
+    }
+
+    Shader& Shader::operator=(const Shader &other)
     {
         CopyFrom(other);
         return *this;
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    Shader::Shader(Shader &&other) try
-    {
-        MoveFrom(std::move(other));
-    }
-    CATCH_RETHROW_EXCEPTIONS
-
-    Shader& Shader::operator=(Shader &&other) try
+    Shader& Shader::operator=(Shader &&other)
     {
         MoveFrom(std::move(other));
         return *this;
     }
-    CATCH_RETHROW_EXCEPTIONS
+
+    GLuint Shader::GetVertexShader() const
+    {
+        return m_vertex_shader;
+    }
+
+    GLuint Shader::GetGeometryShader() const
+    {
+        return m_geometry_shader;
+    }
+
+    GLuint Shader::GetFragmentShader() const
+    {
+        return m_fragment_shader;
+    }
+
+    GLuint Shader::GetProgram() const
+    {
+        return m_program;
+    }
     
-    void Shader::Use() const noexcept
+    void Shader::Use() const
     {
         glUseProgram(m_program);
         PRINT_GL_ERRORS_IF_ANY();
     }
-    
-    void Shader::SetUniformFloat(const std::string &name, float value) const noexcept
+
+    void Shader::SetUniforms()
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+
+    }
+
+    void Shader::BindAdditionals()
+    {
+
+    }
+    
+    void Shader::SetUniformFloat(const std::string &name, const float value) const
+    {
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniform1f(location, value);
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    void Shader::SetUniformInt(const std::string &name, int value) const noexcept
+    void Shader::SetUniformInt(const std::string &name, const int value) const
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniform1i(location, value);
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    void Shader::SetUniformUnsigned(const std::string &name, unsigned value) const noexcept
+    void Shader::SetUniformUnsigned(const std::string &name, const unsigned value) const
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniform1ui(location, value);
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    void Shader::SetUniformVector2(const std::string &name, const Vector2 &value) const noexcept
+    void Shader::SetUniformVector2(const std::string &name, const Vector2 &value) const
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniform2fv(location, value.Size(), value.InternalDataPointer());
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    void Shader::SetUniformVector3(const std::string &name, const Vector3 &value) const noexcept
+    void Shader::SetUniformVector3(const std::string &name, const Vector3 &value) const
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniform3f(location, value.x(), value.y(), value.z());
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    void Shader::SetUniformVector4(const std::string &name, const Vector4 &value) const noexcept
+    void Shader::SetUniformVector4(const std::string &name, const Vector4 &value) const
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniform4fv(location, value.Size(), value.InternalDataPointer());
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    void Shader::SetUniformMatrix4x4(const std::string &name, const Matrix4x4 &value) const noexcept
+    void Shader::SetUniformMatrix4x4(const std::string &name, const Matrix4x4 &value) const
     {
-        GLint location = glGetUniformLocation(m_program, name.c_str());
+        const GLint location = glGetUniformLocation(m_program, name.c_str());
         PRINT_GL_ERRORS_IF_ANY();
 
         glUniformMatrix4fv(location, 1, GL_FALSE, value.InternalDataPointer());
         PRINT_GL_ERRORS_IF_ANY();
     }
     
-    nlohmann::json Shader::Serialize() const try
+    nlohmann::json Shader::Serialize() const
     {
         namespace Constants = ShaderJSONConstants;
 
@@ -244,9 +266,8 @@ namespace MG3TR
         json[Constants::k_parent_node][Constants::k_fragment_shader_attribute] = m_fragment_shader_path;
         return json;
     }
-    CATCH_RETHROW_EXCEPTIONS
     
-    void Shader::Deserialize(const nlohmann::json &json) try
+    void Shader::Deserialize(const nlohmann::json &json)
     {
         namespace Constants = ShaderJSONConstants;
 
@@ -265,14 +286,13 @@ namespace MG3TR
             Construct(vertex_shader_path, fragment_shader_path);
         }
     }
-    CATCH_RETHROW_EXCEPTIONS
     
     void Shader::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
     {
         
     }
     
-    void Shader::Construct(const std::string &vertex_shader_path, const std::string &fragment_shader_path) try
+    void Shader::Construct(const std::string &vertex_shader_path, const std::string &fragment_shader_path)
     {
         if (vertex_shader_path.empty() && fragment_shader_path.empty())
         {
@@ -287,10 +307,9 @@ namespace MG3TR
         m_fragment_shader = CreateShader(GL_FRAGMENT_SHADER, ReadFileInString(fragment_shader_path), fragment_shader_path);
         m_program = CreateShaderProgram(m_vertex_shader, m_geometry_shader, m_fragment_shader);
     }
-    CATCH_RETHROW_EXCEPTIONS
     
     void Shader::Construct(const std::string &vertex_shader_path, const std::string &geometry_shader_path,
-                           const std::string &fragment_shader_path) try
+                           const std::string &fragment_shader_path)
     {
         m_vertex_shader_path = vertex_shader_path;
         m_geometry_shader_path = geometry_shader_path;
@@ -300,15 +319,13 @@ namespace MG3TR
         m_fragment_shader = CreateShader(GL_FRAGMENT_SHADER, ReadFileInString(fragment_shader_path), fragment_shader_path);
         m_program = CreateShaderProgram(m_vertex_shader, m_geometry_shader, m_fragment_shader);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Shader::CopyFrom(const Shader &other) try
+    void Shader::CopyFrom(const Shader &other)
     {
         Construct(other.m_vertex_shader_path, other.m_geometry_shader_path, other.m_fragment_shader_path);
     }
-    CATCH_RETHROW_EXCEPTIONS
 
-    void Shader::MoveFrom(Shader &&other) try
+    void Shader::MoveFrom(Shader &&other)
     {
         m_vertex_shader = other.m_vertex_shader;
         m_geometry_shader = other.m_geometry_shader;
@@ -324,5 +341,4 @@ namespace MG3TR
         other.m_fragment_shader = 0;
         other.m_program = 0;
     }
-    CATCH_RETHROW_EXCEPTIONS
 }

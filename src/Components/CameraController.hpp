@@ -13,9 +13,9 @@ namespace MG3TR
         float m_pitch;
         float m_yaw;
 
-        float m_forward_movement;
-        float m_side_movement;
-        float m_vertical_movement;
+        int m_forward_movement;
+        int m_side_movement;
+        int m_vertical_movement;
 
         bool m_was_rotating_previous_frame;
         bool m_is_rotating_in_current_frame;
@@ -30,37 +30,33 @@ namespace MG3TR
         bool m_is_walking;
         bool m_is_running;
 
+        static constexpr float k_yaw_sensitivity = 0.2F;
+        static constexpr float k_pitch_sensitivity = 0.2F;
+
     public:
-        CameraController(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform) noexcept
-            : Component(game_object, transform)
-        {}
+        CameraController(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform);
 
         CameraController(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,
-                         float walk_speed, float move_speed, float run_speed) noexcept
-            : Component(game_object, transform),
-              m_walk_speed(walk_speed),
-              m_move_speed(move_speed),
-              m_run_speed(run_speed)
-        {}
-        virtual ~CameraController() noexcept = default;
+                         const float walk_speed, const float move_speed, const float run_speed);
+        virtual ~CameraController() = default;
 
         CameraController(const CameraController &) = delete;
+        CameraController(CameraController &&) = default;
+        
         CameraController& operator=(const CameraController &) = delete;
-
-        CameraController(CameraController &&) noexcept = default;
-        CameraController& operator=(CameraController &&) noexcept = default;
+        CameraController& operator=(CameraController &&) = default;
 
         virtual void Initialize() override;
         virtual void ParseInput(const Input &input) override;
-        virtual void FrameUpdate(float delta_time) override;
+        virtual void FrameUpdate(const float delta_time) override;
 
         virtual nlohmann::json Serialize() const override;
         virtual void Deserialize(const nlohmann::json &json) override;
         virtual void LateBindAfterDeserialization(Scene &scene) override;
 
     private:
-        void UpdateMovement(float delta_time);
-        void UpdateRotation(float delta_time);
+        void UpdateMovement(const float delta_time);
+        void UpdateRotation(const float delta_time);
     };
 }
 

@@ -5,7 +5,7 @@
 
 namespace MG3TR
 {
-    using Matrix4x4 = TMatrix4x4<float>;
+    using Matrix4x4 = MathInternal::TMatrix4x4<float>;
 }
 
 #endif // M3GTR_SRC_MATHMATRIX4X4_HPP_INCLUDED
