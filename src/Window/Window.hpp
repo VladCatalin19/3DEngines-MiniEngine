@@ -29,6 +29,8 @@ namespace MG3TR
         Window(Window &&) = default;
         Window& operator=(Window &&) = default;
 
+        void SetScene(std::unique_ptr<Scene> scene);
+
         void Initialize();
         void KeepRunning();
     };

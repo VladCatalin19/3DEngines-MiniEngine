@@ -113,13 +113,18 @@ namespace MG3TR
             glfwSetInputMode(m_window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
         }
 
-        m_scene = std::make_unique<Scene>();
+        m_scene = nullptr;
     }
     
     Window::~Window()
     {
         CloseWindow(m_window);
         TerminateGLFW();
+    }
+
+    void Window::SetScene(std::unique_ptr<Scene> scene)
+    {
+        m_scene = std::move(scene);
     }
 
     void Window::Initialize()
@@ -129,9 +134,7 @@ namespace MG3TR
         api.SetDepthTest(true);
         api.SetBackFaceCulling(true);
 
-        //m_scene->LoadFromFile("res/Scenes/test2.json");
         m_scene->Initialize();
-        //std::cout << m_scene->ToString() << '\n';
 
         m_last_update_time_point = std::chrono::system_clock::now();
     }
@@ -161,8 +164,5 @@ namespace MG3TR
 
             glfwSwapBuffers(m_window);
         }
-
-        //m_scene->SaveToFile("res/Scenes/test2.json");
-        //Scene scene("res/Scenes/test1.json");
     }
 }
