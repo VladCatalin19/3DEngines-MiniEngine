@@ -1,9 +1,9 @@
 #include "FragmentNormalShader.hpp"
-#include "Utils/ExceptionWithStacktrace.hpp"
 
 #include <Components/Camera.hpp>
 #include <Constants/GraphicsConstants.hpp>
 #include <Constants/JSONConstants.hpp>
+#include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Math/Matrix4x4.hpp>
 #include <Scene/Scene.hpp>
 #include <Scripting/Transform.hpp>
@@ -37,13 +37,15 @@ namespace MG3TR
 
     void FragmentNormalShader::SetUniforms()
     {
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+        const auto program = GetProgram();
         const auto model = m_object_transform.lock()->GetWorldModelMatrix();
         const auto view = m_camera.lock()->GetViewMatrix();
         const auto projection = m_camera.lock()->GetProjectionMatrix();
 
-        SetUniformMatrix4x4(ShaderConstants::k_model_uniform_location, model);
-        SetUniformMatrix4x4(ShaderConstants::k_view_uniform_location, view);
-        SetUniformMatrix4x4(ShaderConstants::k_projection_uniform_location, projection);
+        api.SetShaderUniformMatrix4x4(program, ShaderConstants::k_model_uniform_location, model);
+        api.SetShaderUniformMatrix4x4(program, ShaderConstants::k_view_uniform_location, view);
+        api.SetShaderUniformMatrix4x4(program, ShaderConstants::k_projection_uniform_location, projection);
     }
     
     nlohmann::json FragmentNormalShader::Serialize() const

@@ -1,10 +1,9 @@
 #ifndef MG3TR_SRC_GRAPHICS_SUBMESH_HPP_INCLUDED
 #define MG3TR_SRC_GRAPHICS_SUBMESH_HPP_INCLUDED
 
+#include <Graphics/API/GraphicsTypes.hpp>
 #include <Math/Vector2.hpp>
 #include <Math/Vector3.hpp>
-
-#include <glad/glad.h>
 
 #include <vector>
 
@@ -18,11 +17,11 @@ namespace MG3TR
         std::vector<Vector2> m_uvs;
         std::vector<unsigned> m_indices;
 
-        GLuint m_vao;
-        GLuint m_vbo_vertices;
-        GLuint m_vbo_normals;
-        GLuint m_vbo_uvs;
-        GLuint m_ibo;
+        TVAOID m_vao;
+        TVBOID m_vbo_vertices;
+        TVBOID m_vbo_normals;
+        TVBOID m_vbo_uvs;
+        TIBOID m_ibo;
 
     public:
         SubMesh(const std::vector<Vector3> &vertices,
@@ -55,13 +54,14 @@ namespace MG3TR
         std::vector<unsigned>& GetIndices();
         const std::vector<unsigned>& GetIndices() const;
 
-        GLuint GetVAO() const;
-        GLuint GetVBOVertices() const;
-        GLuint GetVBONormals() const;
-        GLuint GetVBOUVs() const;
-        GLuint GetIBO() const;
+        TVAOID GetVAO() const;
+        TVBOID GetVBOVertices() const;
+        TVBOID GetVBONormals() const;
+        TVBOID GetVBOUVs() const;
+        TIBOID GetIBO() const;
 
     private:
+        void Construct();
         void CopyFrom(const SubMesh &other);
         void MoveFrom(SubMesh &&other);
     };

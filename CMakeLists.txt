@@ -38,6 +38,7 @@ set(CXX_DIRECTORIES
     "src/Components"
     "src/Constants"
     "src/Graphics"
+    "src/Graphics/API"
     "src/Graphics/Shaders"
     "src/Math"
     "src/Scene"

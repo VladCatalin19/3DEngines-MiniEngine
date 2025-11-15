@@ -3,6 +3,7 @@
 #include <Components/Camera.hpp>
 #include <Constants/JSONConstants.hpp>
 #include <Constants/MathConstants.hpp>
+#include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Graphics/Mesh.hpp>
 #include <Graphics/Shader.hpp>
 #include <Graphics/Shaders/FragmentNormalShader.hpp>
@@ -16,9 +17,7 @@
 #include <Scene/Scene.hpp>
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
-
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/PrintGLErrors.hpp>
 
 static MG3TR::Sphere CalculateMeshBoundingSphereRadiusInWorldSpace(const MG3TR::Mesh &mesh)
 {
@@ -102,11 +101,9 @@ namespace MG3TR
 
         for (const auto &submesh : m_mesh->GetSubmeshes())
         {
-            glBindVertexArray(submesh.GetVAO());
-            PRINT_GL_ERRORS_IF_ANY();
+            auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
 
-            glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(submesh.GetIndices().size()), GL_UNSIGNED_INT, nullptr);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DrawSubMesh(submesh);
         }
     }
     

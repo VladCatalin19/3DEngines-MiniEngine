@@ -1,7 +1,7 @@
 #ifndef MG3TR_SRC_GRAPHICS_TEXTURE_HPP_INCLUDED
 #define MG3TR_SRC_GRAPHICS_TEXTURE_HPP_INCLUDED
 
-#include <glad/glad.h>
+#include <Graphics/API/GraphicsTypes.hpp>
 
 #include <string>
 
@@ -16,7 +16,7 @@ namespace MG3TR
 
         unsigned char *m_image;
 
-        GLuint m_id;
+        TTextureID m_id;
 
         std::string m_path_to_file;
 

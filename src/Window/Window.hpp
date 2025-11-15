@@ -1,18 +1,16 @@
 #ifndef MG3TR_SRC_WINDOW_WINDOW_HPP_INCLUDED
 #define MG3TR_SRC_WINDOW_WINDOW_HPP_INCLUDED
 
-#include <Scene/Scene.hpp>
-#include <Window/Input.hpp>
-
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
-
 #include <chrono>
 #include <memory>
 #include <string>
 
+struct GLFWwindow;
+
 namespace MG3TR
 {
+    class Scene;
+
     class Window
     {
     private:

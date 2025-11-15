@@ -5,7 +5,6 @@
 #include <Math/Matrix4x4.hpp>
 
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/PrintGLErrors.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>

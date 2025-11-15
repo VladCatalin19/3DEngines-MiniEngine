@@ -5,7 +5,6 @@
 #include "MouseButton.hpp"
 
 #include <Constants/InputConstants.hpp>
-
 #include <Math/Vector2.hpp>
 
 #include <bitset>
@@ -26,14 +25,14 @@ namespace MG3TR
         float m_scroll_offset;
 
     public:
-        Input()= default;
+        Input() = default;
         virtual ~Input() = default;
 
-        Input(const Input &) = delete;
-        Input& operator=(const Input &) = delete;
+        Input(const Input&) = delete;
+        Input& operator=(const Input&) = delete;
 
-        Input(Input &&) = default;
-        Input& operator=(Input &&) = default;
+        Input(Input&&) = default;
+        Input& operator=(Input&&) = default;
 
         bool IsKeyPressed(const Key key) const;
         bool IsMouseButtonPressed(const MouseButton mouse_button) const;

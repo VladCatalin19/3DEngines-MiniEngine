@@ -1,16 +1,11 @@
 #include "Shader.hpp"
-#include "Utils/ExceptionWithStacktrace.hpp"
 
 #include <Constants/JSONConstants.hpp>
-
-#include <glad/glad.h>
-
+#include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/PrintGLErrors.hpp>
 
 #include <fstream>
 #include <iterator>
-#include <vector>
 
 static std::string ReadFileInString(const std::string &file_name)
 {
@@ -23,63 +18,6 @@ static std::string ReadFileInString(const std::string &file_name)
 
     const std::string file_content(std::istreambuf_iterator<char>{input_stream}, {});
     return file_content;
-}
-
-static GLuint CreateShader(const GLenum shader_type, const std::string &shader_code,
-                           const std::string &shader_path)
-{
-    GLuint shader = glCreateShader(shader_type);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    const char *shader_code_pointer = shader_code.c_str();
-    glShaderSource(shader, static_cast<GLsizei>(1), &shader_code_pointer, nullptr);
-    PRINT_GL_ERRORS_IF_ANY();
-    glCompileShader(shader);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    GLint is_compiled = 0;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &is_compiled);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    if (is_compiled == GL_FALSE)
-    {
-        GLint max_length = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
-        PRINT_GL_ERRORS_IF_ANY();
-
-        std::vector<GLchar> error_log(max_length);
-        glGetShaderInfoLog(shader, max_length, &max_length, &error_log[0]);
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glDeleteShader(shader);
-        PRINT_GL_ERRORS_IF_ANY();
-        throw MG3TR::ExceptionWithStacktrace("Could not compile \"" + shader_path + "\": " + &error_log[0]);
-    }
-
-    return shader;
-}
-
-static GLuint CreateShaderProgram(const GLuint vertex_shader, const GLuint geometry_shader, const GLuint fragment_shader)
-{
-    const GLuint program = glCreateProgram();
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glAttachShader(program, vertex_shader);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    if (geometry_shader != 0)
-    {
-        glAttachShader(program, geometry_shader);
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-
-    glAttachShader(program, fragment_shader);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glLinkProgram(program);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    return program;
 }
 
 namespace MG3TR
@@ -97,38 +35,27 @@ namespace MG3TR
     
     Shader::~Shader()
     {
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
         if (m_vertex_shader > 0)
         {
-            glDetachShader(m_program, m_vertex_shader);
-            PRINT_GL_ERRORS_IF_ANY();
-
-            glDeleteShader(m_vertex_shader);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteShader(m_program, m_vertex_shader);
         }
 
         if (m_geometry_shader > 0)
         {
-            glDetachShader(m_program, m_geometry_shader);
-            PRINT_GL_ERRORS_IF_ANY();
-
-            glDeleteShader(m_geometry_shader);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteShader(m_program, m_geometry_shader);
         }
 
         if (m_fragment_shader > 0)
         {
-            glDetachShader(m_program, m_fragment_shader);
-            PRINT_GL_ERRORS_IF_ANY();
-
-            glDeleteShader(m_fragment_shader);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteShader(m_program, m_fragment_shader);
 
         }
 
         if (m_program > 0)
         {
-            glDeleteProgram(m_program);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteShaderProgram(m_program);
         }
     }
 
@@ -154,30 +81,30 @@ namespace MG3TR
         return *this;
     }
 
-    GLuint Shader::GetVertexShader() const
+    TShaderID Shader::GetVertexShader() const
     {
         return m_vertex_shader;
     }
 
-    GLuint Shader::GetGeometryShader() const
+    TShaderID Shader::GetGeometryShader() const
     {
         return m_geometry_shader;
     }
 
-    GLuint Shader::GetFragmentShader() const
+    TShaderID Shader::GetFragmentShader() const
     {
         return m_fragment_shader;
     }
 
-    GLuint Shader::GetProgram() const
+    TShaderProgramID Shader::GetProgram() const
     {
         return m_program;
     }
     
     void Shader::Use() const
     {
-        glUseProgram(m_program);
-        PRINT_GL_ERRORS_IF_ANY();
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+        api.UseShader(m_program);
     }
 
     void Shader::SetUniforms()
@@ -188,69 +115,6 @@ namespace MG3TR
     void Shader::BindAdditionals()
     {
 
-    }
-    
-    void Shader::SetUniformFloat(const std::string &name, const float value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniform1f(location, value);
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-    
-    void Shader::SetUniformInt(const std::string &name, const int value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniform1i(location, value);
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-    
-    void Shader::SetUniformUnsigned(const std::string &name, const unsigned value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniform1ui(location, value);
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-    
-    void Shader::SetUniformVector2(const std::string &name, const Vector2 &value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniform2fv(location, value.Size(), value.InternalDataPointer());
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-    
-    void Shader::SetUniformVector3(const std::string &name, const Vector3 &value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniform3f(location, value.x(), value.y(), value.z());
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-    
-    void Shader::SetUniformVector4(const std::string &name, const Vector4 &value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniform4fv(location, value.Size(), value.InternalDataPointer());
-        PRINT_GL_ERRORS_IF_ANY();
-    }
-    
-    void Shader::SetUniformMatrix4x4(const std::string &name, const Matrix4x4 &value) const
-    {
-        const GLint location = glGetUniformLocation(m_program, name.c_str());
-        PRINT_GL_ERRORS_IF_ANY();
-
-        glUniformMatrix4fv(location, 1, GL_FALSE, value.InternalDataPointer());
-        PRINT_GL_ERRORS_IF_ANY();
     }
     
     nlohmann::json Shader::Serialize() const
@@ -299,25 +163,29 @@ namespace MG3TR
             return;
         }
 
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
         m_vertex_shader_path = vertex_shader_path;
         m_geometry_shader_path = "";
         m_fragment_shader_path = fragment_shader_path;
-        m_vertex_shader = CreateShader(GL_VERTEX_SHADER, ReadFileInString(vertex_shader_path), vertex_shader_path);
+        m_vertex_shader = api.CreateShader(TShaderType::VertexShader, ReadFileInString(vertex_shader_path), vertex_shader_path);
         m_geometry_shader = 0;
-        m_fragment_shader = CreateShader(GL_FRAGMENT_SHADER, ReadFileInString(fragment_shader_path), fragment_shader_path);
-        m_program = CreateShaderProgram(m_vertex_shader, m_geometry_shader, m_fragment_shader);
+        m_fragment_shader = api.CreateShader(TShaderType::FragmentShader, ReadFileInString(fragment_shader_path), fragment_shader_path);
+        m_program = api.CreateShaderProgram(m_vertex_shader, m_fragment_shader);
     }
     
     void Shader::Construct(const std::string &vertex_shader_path, const std::string &geometry_shader_path,
                            const std::string &fragment_shader_path)
     {
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
         m_vertex_shader_path = vertex_shader_path;
         m_geometry_shader_path = geometry_shader_path;
         m_fragment_shader_path = fragment_shader_path;
-        m_vertex_shader = CreateShader(GL_VERTEX_SHADER, ReadFileInString(vertex_shader_path), vertex_shader_path);
-        m_geometry_shader = CreateShader(GL_GEOMETRY_SHADER, ReadFileInString(geometry_shader_path), geometry_shader_path);
-        m_fragment_shader = CreateShader(GL_FRAGMENT_SHADER, ReadFileInString(fragment_shader_path), fragment_shader_path);
-        m_program = CreateShaderProgram(m_vertex_shader, m_geometry_shader, m_fragment_shader);
+        m_vertex_shader = api.CreateShader(TShaderType::VertexShader, ReadFileInString(vertex_shader_path), vertex_shader_path);
+        m_geometry_shader = api.CreateShader(TShaderType::GeometryShader, ReadFileInString(geometry_shader_path), geometry_shader_path);
+        m_fragment_shader = api.CreateShader(TShaderType::FragmentShader, ReadFileInString(fragment_shader_path), fragment_shader_path);
+        m_program = api.CreateShaderProgram(m_vertex_shader, m_geometry_shader, m_fragment_shader);
     }
 
     void Shader::CopyFrom(const Shader &other)

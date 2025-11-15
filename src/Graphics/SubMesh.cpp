@@ -1,81 +1,32 @@
 #include "SubMesh.hpp"
 
 #include <Constants/GraphicsConstants.hpp>
+#include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/PrintGLErrors.hpp>
 
-#include <glad/glad.h>
-
-static GLuint GenerateVAO()
-{
-    GLuint vao = 0;
-    glGenVertexArrays(1, &vao);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBindVertexArray(vao);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    return vao;
-}
 
 template <typename TVector>
-static GLuint GenerateVBO(const std::vector<TVector> &std_vector, const GLuint location)
+static MG3TR::TVBOID CreateVBO(const std::vector<TVector> &std_vector, const unsigned location)
 {
-    if (std_vector.empty())
-    {
-        return static_cast<GLuint>(0);
-    }
+    const void *const std_vector_pointer = reinterpret_cast<const void*>(&std_vector[0]);
+    const std::size_t std_vector_size = sizeof(std_vector[0]) * std_vector.size();
+    const std::size_t vector_size = TVector::Size();
 
-    GLuint vbo = 0;
-    const GLsizeiptr std_vector_size = sizeof(std_vector[0]) * std_vector.size();
-    const void* const std_vector_pointer = reinterpret_cast<const void*>(&std_vector[0]);
-    const GLint vector_size = TVector::Size();
-
-    glGenBuffers(1, &vbo);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBufferData(GL_ARRAY_BUFFER, std_vector_size, std_vector_pointer, GL_STATIC_DRAW);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glEnableVertexAttribArray(location);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glVertexAttribPointer(location, vector_size, GL_FLOAT, GL_FALSE, static_cast<GLsizei>(0), nullptr);
-    PRINT_GL_ERRORS_IF_ANY();
+    auto& api = MG3TR::GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+    const MG3TR::TVBOID vbo = api.CreateVBO(std_vector_pointer, std_vector_size, vector_size, location);
 
     return vbo;
 }
 
-static GLuint GenerateIBO(const std::vector<unsigned> &indices)
+static MG3TR::TIBOID CreateIBO(const std::vector<unsigned> &indices)
 {
-    if (indices.empty())
-    {
-        return static_cast<GLuint>(0);
-    }
+    const void *const indices_pointer = reinterpret_cast<const void*>(&indices[0]);
+    const std::size_t indices_size = sizeof(indices[0]) * indices.size();
 
-    GLuint ibo = 0;
-    const GLsizeiptr indices_size = sizeof(indices[0]) * indices.size();
-    const void* const indices_pointer = reinterpret_cast<const void*>(&indices[0]);
-
-    glGenBuffers(1, &ibo);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices_size, indices_pointer, GL_STATIC_DRAW);
-    PRINT_GL_ERRORS_IF_ANY();
+    auto& api = MG3TR::GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+    MG3TR::TIBOID ibo = api.CreateIBO(indices_pointer, indices_size);
 
     return ibo;
-}
-
-static void ResetOpenGLState()
-{
-    glEnableVertexAttribArray(0);
-    PRINT_GL_ERRORS_IF_ANY();
 }
 
 namespace MG3TR
@@ -89,20 +40,7 @@ namespace MG3TR
           m_uvs(uvs),
           m_indices(indices)
     {
-        if (vertices.empty() || indices.empty())
-        {
-            throw ExceptionWithStacktrace("Cannot create mesh with no vertices or no triangles!");
-        }
-
-        m_vao = GenerateVAO();
-
-        m_vbo_vertices = GenerateVBO(m_vertices, MeshConstants::k_vertices_location);
-        m_vbo_normals = GenerateVBO(m_normals, MeshConstants::k_normals_location);
-        m_vbo_uvs = GenerateVBO(m_uvs, MeshConstants::k_uvs_location);
-
-        m_ibo = GenerateIBO(m_indices);
-
-        ResetOpenGLState();
+        Construct();
     }
 
     SubMesh::SubMesh(std::vector<Vector3> &&vertices,
@@ -114,43 +52,28 @@ namespace MG3TR
           m_uvs(uvs),
           m_indices(indices)
     {
-        if (vertices.empty() || indices.empty())
-        {
-            throw ExceptionWithStacktrace("Cannot create mesh with no vertices or no triangles!");
-        }
-
-        m_vao = GenerateVAO();
-
-        m_vbo_vertices = GenerateVBO(m_vertices, MeshConstants::k_vertices_location);
-        m_vbo_normals = GenerateVBO(m_normals, MeshConstants::k_normals_location);
-        m_vbo_uvs = GenerateVBO(m_uvs, MeshConstants::k_uvs_location);
-
-        m_ibo = GenerateIBO(m_indices);
-
-        ResetOpenGLState();
+        Construct();
     }
     
     SubMesh::~SubMesh()
     {
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
         if (m_vbo_uvs > 0)
         {
-            glDeleteBuffers(1, &m_vbo_uvs);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteVBO(m_vbo_uvs);
         }
         if (m_vbo_normals > 0)
         {
-            glDeleteBuffers(1, &m_vbo_normals);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteVBO(m_vbo_normals);
         }
         if (m_vbo_vertices > 0)
         {
-            glDeleteBuffers(1, &m_vbo_vertices);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteVBO(m_vbo_vertices);
         }
         if (m_vao > 0)
         {
-            glDeleteVertexArrays(1, &m_vao);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.DeleteVAO(m_vao);
         }
     }
 
@@ -216,31 +139,48 @@ namespace MG3TR
         return m_indices;
     }
 
-    GLuint SubMesh::GetVAO() const
+    TVAOID SubMesh::GetVAO() const
     {
         return m_vao;
     }
 
-    GLuint SubMesh::GetVBOVertices() const
+    TVBOID SubMesh::GetVBOVertices() const
     {
         return m_vbo_vertices;
     }
 
-    GLuint SubMesh::GetVBONormals() const
+    TVBOID SubMesh::GetVBONormals() const
     {
         return m_vbo_normals;
     }
 
-    GLuint SubMesh::GetVBOUVs() const
+    TVBOID SubMesh::GetVBOUVs() const
     {
         return m_vbo_uvs;
     }
 
-    GLuint SubMesh::GetIBO() const
+    TIBOID SubMesh::GetIBO() const
     {
         return m_ibo;
     }
 
+    void SubMesh::Construct()
+    {
+        if (m_vertices.empty() || m_indices.empty())
+        {
+            throw ExceptionWithStacktrace("Cannot create mesh with no vertices or no triangles!");
+        }
+
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
+        m_vao = api.CreateVAO();
+
+        m_vbo_vertices = CreateVBO(m_vertices, MeshConstants::k_vertices_location);
+        m_vbo_normals = CreateVBO(m_normals, MeshConstants::k_normals_location);
+        m_vbo_uvs = CreateVBO(m_uvs, MeshConstants::k_uvs_location);
+
+        m_ibo = CreateIBO(m_indices);
+    }
     
     void SubMesh::CopyFrom(const SubMesh &other)
     {
@@ -249,15 +189,7 @@ namespace MG3TR
         m_uvs = other.m_uvs;
         m_indices = other.m_indices;
         
-        m_vao = GenerateVAO();
-
-        m_vbo_vertices = GenerateVBO(m_vertices, MeshConstants::k_vertices_location);
-        m_vbo_normals = GenerateVBO(m_normals, MeshConstants::k_normals_location);
-        m_vbo_uvs = GenerateVBO(m_uvs, MeshConstants::k_uvs_location);
-
-        m_ibo = GenerateIBO(m_indices);
-
-        ResetOpenGLState();
+        Construct();
     }
 
     void SubMesh::MoveFrom(SubMesh &&other)

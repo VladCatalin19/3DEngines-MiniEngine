@@ -1,59 +1,12 @@
 #include "Texture.hpp"
 
+#include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/PrintGLErrors.hpp>
 
-#include <glad/glad.h>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
 #include <cstring>
-
-static const GLint k_internal_formats[] = { 0, GL_R8, GL_RG8, GL_RGB8, GL_RGBA8 };
-static const GLint k_pixel_format[] = { 0, GL_RED, GL_RG, GL_RGB, GL_RGBA };
-
-static GLuint CreateTextureID(const int width, const int height, const int color_channels, const unsigned char *const image)
-{
-    GLuint id = 0;
-
-    glGenTextures(1, &id);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBindTexture(GL_TEXTURE_2D, id);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_LINEAR);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    PRINT_GL_ERRORS_IF_ANY();
-
-#   ifdef GL_EXT_texture_filter_anisotropic
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
-        PRINT_GL_ERRORS_IF_ANY();
-#   endif
-
-    glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    PRINT_GL_ERRORS_IF_ANY();
-    
-    glTexImage2D(GL_TEXTURE_2D, 0, k_internal_formats[color_channels], width, height,
-                 0, k_pixel_format[color_channels], GL_UNSIGNED_BYTE, image);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glGenerateMipmap(GL_TEXTURE_2D);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    PRINT_GL_ERRORS_IF_ANY();
-
-    return id;
-}
 
 namespace MG3TR
 {
@@ -102,16 +55,16 @@ namespace MG3TR
             throw ExceptionWithStacktrace("Could not read image at \"" + path_to_file + "\".");
         }
 
-        m_id = CreateTextureID(m_width, m_height, m_color_channels, m_image);
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
+        m_id = api.CreateTexture(m_width, m_height, m_color_channels, m_image);
     }
     
     void Texture::Bind(const unsigned texture_unit_id)
     {
-        glActiveTexture(GL_TEXTURE0 + texture_unit_id);
-        PRINT_GL_ERRORS_IF_ANY();
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
 
-        glBindTexture(GL_TEXTURE_2D, m_id);
-        PRINT_GL_ERRORS_IF_ANY();
+        api.BindTexture(m_id, texture_unit_id);
     }
 
     const std::string& Texture::GetPathToFile() const
@@ -125,8 +78,9 @@ namespace MG3TR
 
         if (m_id > 0)
         {
-            glDeleteTextures(1, &m_id);
-            PRINT_GL_ERRORS_IF_ANY();
+            auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
+            api.DeleteTexture(m_id);
         }
 
         m_image = nullptr;
@@ -147,7 +101,9 @@ namespace MG3TR
 
         (void)std::memcpy(m_image, other.m_image, image_size);
 
-        m_id = CreateTextureID(m_width, m_height, m_color_channels, m_image);
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
+        m_id = api.CreateTexture(m_width, m_height, m_color_channels, m_image);
 
         m_path_to_file = other.m_path_to_file;
     }

@@ -1,15 +1,14 @@
 #include "Window.hpp"
-#include "Utils/ExceptionWithStacktrace.hpp"
 
-#include <glad/glad.h>
+#include "Input.hpp"
+#include "MouseButton.hpp"
+
 #include <GLFW/glfw3.h>
 
 #include <Constants/InputConstants.hpp>
-#include <Window/Input.hpp>
-#include <Window/MouseButton.hpp>
-
+#include <Graphics/API/GraphicsAPISingleton.hpp>
+#include <Scene/Scene.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/PrintGLErrors.hpp>
 
 #include <iostream>
 
@@ -85,17 +84,6 @@ static GLFWwindow* OpenNewWindow(const int height, const int width, const std::s
     return window;
 }
 
-static void InitGLAD()
-{
-    const GLenum ret = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-
-    const bool GLAD_init_successfully = (ret != 0);
-    if (!GLAD_init_successfully)
-    {
-        throw MG3TR::ExceptionWithStacktrace(std::string("Could not initialize GLAD."));
-    }
-}
-
 static void CloseWindow(GLFWwindow *window)
 {
     glfwDestroyWindow(window);
@@ -112,10 +100,13 @@ namespace MG3TR
 {
     Window::Window(const int height, const int width, const std::string &name)
     {
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+        
         InitGLFW();
         m_window = OpenNewWindow(height, width, name);
-        InitGLAD();
         SetGLFWCallbacks(m_window);
+
+        api.Initialise(reinterpret_cast<void *>(glfwGetProcAddress));
 
         if (glfwRawMouseMotionSupported())
         {
@@ -133,10 +124,10 @@ namespace MG3TR
 
     void Window::Initialize()
     {
-        glEnable(GL_DEPTH_TEST);
-        glDepthFunc(GL_LESS);
-        glEnable(GL_CULL_FACE);  
-        glCullFace(GL_BACK);
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
+        api.SetDepthTest(true);
+        api.SetBackFaceCulling(true);
 
         //m_scene->LoadFromFile("res/Scenes/test2.json");
         m_scene->Initialize();
@@ -147,13 +138,13 @@ namespace MG3TR
 
     void Window::KeepRunning()
     {
+        auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
+
         while (!glfwWindowShouldClose(m_window))
         {
             glfwPollEvents();
-            PRINT_GL_ERRORS_IF_ANY();
 
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            PRINT_GL_ERRORS_IF_ANY();
+            api.ClearScreen();
             
             double xpos, ypos;
             glfwGetCursorPos(m_window, &xpos, &ypos);
@@ -169,7 +160,6 @@ namespace MG3TR
             m_last_update_time_point = current_time_point;
 
             glfwSwapBuffers(m_window);
-            PRINT_GL_ERRORS_IF_ANY();
         }
 
         //m_scene->SaveToFile("res/Scenes/test2.json");
