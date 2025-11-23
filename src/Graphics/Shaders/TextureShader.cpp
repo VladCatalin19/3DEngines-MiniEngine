@@ -1,13 +1,17 @@
 #include "TextureShader.hpp"
 
 #include <Constants/GraphicsConstants.hpp>
-#include <Constants/JSONConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
+#include <Constants/ShaderConstants.hpp>
 #include <Components/Camera.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Graphics/Texture.hpp>
 #include <Scene/Scene.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/ProjDirOperations.hpp>
 
 namespace MG3TR
 {
@@ -41,32 +45,42 @@ namespace MG3TR
     {
         m_texture->Bind();
     }
-    
-    nlohmann::json TextureShader::Serialize() const
+
+    void TextureShader::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = TextureShaderJSONConstants;
+        Shader::Serialise(serialiser);
 
-        nlohmann::json json;
+        namespace Constants = TextureShaderSerialisationConstants;
 
-        json[Constants::k_parent_node][Constants::k_camera_uid_attribute] = m_camera.lock()->GetUID();
-        json[Constants::k_parent_node][Constants::k_object_transform_uid_attribute] = m_object_transform.lock()->GetUID();
-        json[Constants::k_parent_node][Constants::k_texture_path_attribute] = m_texture->GetPathToFile();
+        const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
+        const TUID camera_uid = m_camera.lock()->GetUID();
+        const TUID object_uid = m_object_transform.lock()->GetUID();
+        const std::string &texture_path = m_texture->GetPathToFile();
+        const std::string relative_texture_path = RemoveProjDirFromPath(texture_path);
 
-        return json;
+        serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
+
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
+        serialiser.SerialiseUnsigned(Constants::k_object_transform_uid_attribute, object_uid);
+        serialiser.SerialiseString(Constants::k_texture_path_attribute, relative_texture_path);
     }
-    
-    void TextureShader::Deserialize(const nlohmann::json &json)
+
+    void TextureShader::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = TextureShaderJSONConstants;
+        Shader::Deserialise(deserialiser);
 
-        nlohmann::json texture_json = json.at(Constants::k_parent_node);
+        namespace Constants = TextureShaderSerialisationConstants;
 
-        m_camera_uid = texture_json.at(Constants::k_camera_uid_attribute);
-        m_object_transform_uid = texture_json.at(Constants::k_object_transform_uid_attribute);
-        m_texture = std::make_shared<Texture>(texture_json.at(Constants::k_texture_path_attribute));
+        m_camera_uid = deserialiser.DeserialiseUnsigned(Constants::k_camera_uid_attribute);
+        m_object_transform_uid = deserialiser.DeserialiseUnsigned(Constants::k_object_transform_uid_attribute);
+
+        const std::string relative_texture_path = deserialiser.DeserialiseString(Constants::k_texture_path_attribute);
+        const std::string texture_path = AddProjDirToPath(relative_texture_path);
+        m_texture = std::make_shared<Texture>(texture_path);
     }
-    
-    void TextureShader::LateBindAfterDeserialization(Scene &scene)
+
+    void TextureShader::LateBind(Scene &scene)
     {
         m_camera = scene.FindCameraWithUID(m_camera_uid);
         if (m_camera.lock() == nullptr)

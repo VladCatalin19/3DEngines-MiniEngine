@@ -5,14 +5,14 @@
 #include <Graphics/SubMesh.hpp>
 #include <Math/Vector2.hpp>
 #include <Math/Vector3.hpp>
-#include <Scene/IJsonSerializeable.hpp>
+#include <Serialisation/ISerialisable.hpp>
 
 #include <string>
 #include <vector>
 
 namespace MG3TR
 {
-    class Mesh : public IJsonSerializeable
+    class Mesh : public ISerialisable
     {
     private:
         std::vector<SubMesh> m_submeshes;
@@ -39,9 +39,8 @@ namespace MG3TR
         const std::vector<SubMesh>& GetSubmeshes() const;
         const std::vector<Material>& GetMaterials() const;
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
 
     private:
         void Construct(const std::vector<Vector3> &vertices,

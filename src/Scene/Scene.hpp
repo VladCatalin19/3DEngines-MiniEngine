@@ -33,12 +33,7 @@ namespace MG3TR
         const std::shared_ptr<Transform>& GetRootTransform() const;
 
         void Initialize();
-
         void Update(const Input &input, const float delta_time);
-
-        std::string ToString() const;
-        friend std::ostream& operator<<(std::ostream &os, const Scene &scene);
-
         void LoadFromFile(const std::string &file_name);
         void SaveToFile(const std::string &file_name) const;
 

@@ -1,10 +1,14 @@
 #include "CameraController.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Math/Quaternion.hpp>
 #include <Math/Math.hxx>
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
+#include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Window/Input.hpp>
 
 namespace MG3TR
@@ -62,36 +66,33 @@ namespace MG3TR
         UpdateMovement(delta_time);
         UpdateRotation(delta_time);
     }
-    
-    nlohmann::json CameraController::Serialize() const 
+
+    void CameraController::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = CameraControllerJSONConstants;
+        namespace Constants = CameraControllerSerialisationConstants;
 
-        nlohmann::json json;
+        const TUID uid = GetUID();
+        const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
 
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
-        json[Constants::k_parent_node][Constants::k_walk_speed_attribute] = m_walk_speed;
-        json[Constants::k_parent_node][Constants::k_move_speed_attribute] = m_move_speed;
-        json[Constants::k_parent_node][Constants::k_run_speed_attribute] = m_run_speed;
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        return json;
+        serialiser.SerialiseFloat(Constants::k_walk_speed_attribute, m_walk_speed);
+        serialiser.SerialiseFloat(Constants::k_move_speed_attribute, m_move_speed);
+        serialiser.SerialiseFloat(Constants::k_run_speed_attribute, m_run_speed);
     }
-    
-    void CameraController::Deserialize(const nlohmann::json &json) 
-    {
-        namespace Constants = CameraControllerJSONConstants;
 
-        nlohmann::json controller_json = json.at(Constants::k_parent_node);
-
-        SetUID(controller_json.at(Constants::k_uid_attribute));
-        m_walk_speed = controller_json.at(Constants::k_walk_speed_attribute);
-        m_move_speed = controller_json.at(Constants::k_move_speed_attribute);
-        m_run_speed = controller_json.at(Constants::k_run_speed_attribute);
-    }
-    
-    void CameraController::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
+    void CameraController::Deserialise(IDeserialiser &deserialiser)
     {
-        
+        namespace Constants = CameraControllerSerialisationConstants;
+
+        const TUID uid = deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute);
+        SetUID(uid);
+
+        m_walk_speed = deserialiser.DeserialiseFloat(Constants::k_walk_speed_attribute);
+        m_move_speed = deserialiser.DeserialiseFloat(Constants::k_move_speed_attribute);
+        m_run_speed = deserialiser.DeserialiseFloat(Constants::k_run_speed_attribute);
     }
     
     void CameraController::UpdateMovement(float delta_time) 

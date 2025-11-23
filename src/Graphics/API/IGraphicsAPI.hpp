@@ -45,7 +45,7 @@ namespace MG3TR
         virtual void DeleteVBO(const TVBOID vbo) = 0;
         virtual void DeleteIBO(const TIBOID ibo) = 0;
 
-        virtual TShaderID CreateShader(const TShaderType type, const std::string &code, const std::string &path) = 0;
+        virtual TShaderID CreateShader(const GPUShaderType type, const std::string &code, const std::string &path) = 0;
         virtual TShaderProgramID CreateShaderProgram(const TShaderID vertex_shader,
                                                      const TShaderID fragment_shader) = 0;
         virtual TShaderProgramID CreateShaderProgram(const TShaderID vertex_shader,

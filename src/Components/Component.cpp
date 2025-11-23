@@ -76,4 +76,9 @@ namespace MG3TR
     {
         
     }
+
+    void Component::LateBind([[maybe_unused]] Scene &scene)
+    {
+
+    }
 }

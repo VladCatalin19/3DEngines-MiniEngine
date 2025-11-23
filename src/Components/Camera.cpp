@@ -1,7 +1,10 @@
 #include "Camera.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
@@ -118,53 +121,47 @@ namespace MG3TR
     {
         return m_zfar;
     }
-    
-    nlohmann::json Camera::Serialize() const
+
+    void Camera::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = CameraJSONConstants;
+        namespace Constants = CameraSerialisationConstants;
 
-        nlohmann::json json;
+        const TUID uid = GetUID();
+        const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
 
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
-        json[Constants::k_parent_node][Constants::k_camera_mode_attribute] = static_cast<unsigned>(m_camera_mode);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        json[Constants::k_parent_node][Constants::k_fov_attribute] = m_fov;
-        json[Constants::k_parent_node][Constants::k_aspect_ratio_attribute] = m_aspect_ratio;
-
-        json[Constants::k_parent_node][Constants::k_xmin_attribute] = m_xmin;
-        json[Constants::k_parent_node][Constants::k_xmax_attribute] = m_xmax;
-        json[Constants::k_parent_node][Constants::k_ymin_attribute] = m_ymin;
-        json[Constants::k_parent_node][Constants::k_ymax_attribute] = m_ymax;
-
-        json[Constants::k_parent_node][Constants::k_znear_attribute] = m_znear;
-        json[Constants::k_parent_node][Constants::k_zfar_attribute] = m_zfar;
-
-        return json;
+        serialiser.SerialiseUnsigned(Constants::k_camera_mode_attribute, static_cast<unsigned long long>(m_camera_mode));
+        serialiser.SerialiseFloat(Constants::k_fov_attribute, m_fov);
+        serialiser.SerialiseFloat(Constants::k_aspect_ratio_attribute, m_aspect_ratio);
+        serialiser.SerialiseFloat(Constants::k_xmin_attribute, m_xmin);
+        serialiser.SerialiseFloat(Constants::k_xmax_attribute, m_xmax);
+        serialiser.SerialiseFloat(Constants::k_ymin_attribute, m_ymin);
+        serialiser.SerialiseFloat(Constants::k_ymax_attribute, m_ymax);
+        serialiser.SerialiseFloat(Constants::k_znear_attribute, m_znear);
+        serialiser.SerialiseFloat(Constants::k_zfar_attribute, m_zfar);
     }
-    
-    void Camera::Deserialize(const nlohmann::json &json)
+
+    void Camera::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = CameraJSONConstants;
+        namespace Constants = CameraSerialisationConstants;
 
-        nlohmann::json camera_json = json.at(Constants::k_parent_node);
+        const TUID uid = deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute);
+        SetUID(uid);
 
-        SetUID(camera_json.at(Constants::k_uid_attribute));
-        m_camera_mode = camera_json.at(Constants::k_camera_mode_attribute);
+        m_camera_mode = static_cast<CameraMode>(deserialiser.DeserialiseUnsigned(Constants::k_camera_mode_attribute));
 
-        m_fov = camera_json.at(Constants::k_fov_attribute);
-        m_aspect_ratio = camera_json.at(Constants::k_aspect_ratio_attribute);
+        m_fov = deserialiser.DeserialiseFloat(Constants::k_fov_attribute);
+        m_aspect_ratio = deserialiser.DeserialiseFloat(Constants::k_aspect_ratio_attribute);
 
-        m_xmin = camera_json.at(Constants::k_xmin_attribute);
-        m_xmax = camera_json.at(Constants::k_xmax_attribute);
-        m_ymin = camera_json.at(Constants::k_ymin_attribute);
-        m_ymax = camera_json.at(Constants::k_ymax_attribute);
+        m_xmin = deserialiser.DeserialiseFloat(Constants::k_xmin_attribute);
+        m_xmax = deserialiser.DeserialiseFloat(Constants::k_xmax_attribute);
+        m_ymin = deserialiser.DeserialiseFloat(Constants::k_ymin_attribute);
+        m_ymax = deserialiser.DeserialiseFloat(Constants::k_ymax_attribute);
 
-        m_znear = camera_json.at(Constants::k_znear_attribute);
-        m_zfar = camera_json.at(Constants::k_zfar_attribute);
-    }
-    
-    void Camera::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
-    {
-        
+        m_znear = deserialiser.DeserialiseFloat(Constants::k_znear_attribute);
+        m_zfar = deserialiser.DeserialiseFloat(Constants::k_zfar_attribute);
     }
 }

@@ -2,11 +2,14 @@
 
 #include <Components/Camera.hpp>
 #include <Constants/GraphicsConstants.hpp>
-#include <Constants/JSONConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
+#include <Constants/ShaderConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Math/Matrix4x4.hpp>
 #include <Scene/Scene.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
@@ -47,30 +50,35 @@ namespace MG3TR
         api.SetShaderUniformMatrix4x4(program, ShaderConstants::k_view_uniform_location, view);
         api.SetShaderUniformMatrix4x4(program, ShaderConstants::k_projection_uniform_location, projection);
     }
-    
-    nlohmann::json FragmentNormalShader::Serialize() const
+
+    void FragmentNormalShader::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = FragmentNormalShaderJSONConstants;
+        Shader::Serialise(serialiser);
 
-        nlohmann::json json;
+        namespace Constants = FragmentNormalShaderSerialisationConstants;
+        
+        const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
+        const TUID camera_uid = m_camera.lock()->GetUID();
+        const TUID object_uid = m_object_transform.lock()->GetUID();
 
-        json[Constants::k_parent_node][Constants::k_camera_uid_attribute] = m_camera.lock()->GetUID();
-        json[Constants::k_parent_node][Constants::k_object_transform_uid_attribute] = m_object_transform.lock()->GetUID();
+        serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        return json;
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
+        serialiser.SerialiseUnsigned(Constants::k_object_transform_uid_attribute, object_uid);
     }
-    
-    void FragmentNormalShader::Deserialize(const nlohmann::json &json)
+
+    void FragmentNormalShader::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = FragmentNormalShaderJSONConstants;
+        Shader::Deserialise(deserialiser);
 
-        nlohmann::json shader_json = json.at(Constants::k_parent_node);
+        namespace Constants = FragmentNormalShaderSerialisationConstants;
 
-        m_camera_uid = shader_json.at(Constants::k_camera_uid_attribute);
-        m_object_transform_uid = shader_json.at(Constants::k_object_transform_uid_attribute);
+        m_camera_uid = deserialiser.DeserialiseUnsigned(Constants::k_camera_uid_attribute);
+        m_object_transform_uid = deserialiser.DeserialiseUnsigned(Constants::k_object_transform_uid_attribute);
     }
-    
-    void FragmentNormalShader::LateBindAfterDeserialization(Scene &scene)
+
+    void FragmentNormalShader::LateBind(Scene &scene)
     {
         m_camera = scene.FindCameraWithUID(m_camera_uid);
         if (m_camera.lock() == nullptr)

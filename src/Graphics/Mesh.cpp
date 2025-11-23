@@ -1,10 +1,12 @@
 #include "Mesh.hpp"
 
 #include <Constants/GraphicsConstants.hpp>
-#include <Constants/JSONConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Math/Matrix4x4.hpp>
-
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/ProjDirOperations.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
@@ -161,7 +163,6 @@ static auto ConvertAssimpMaterialsToMeshMaterials(const aiScene &scene)
                 materials.push_back(material);
             }
         }
-
     }
 
     return materials;
@@ -217,39 +218,40 @@ namespace MG3TR
     {
         return m_materials;
     }
-    
-    nlohmann::json Mesh::Serialize() const
+
+    void Mesh::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = MeshJSONConstants;
+        namespace Constants = MeshSerialisationConstants;
 
-        nlohmann::json json;
-
-        if (!m_path_to_file.empty())
+        const bool path_empty = m_path_to_file.empty();
+        if (!path_empty)
         {
-            json[Constants::k_parent_node][Constants::k_path_to_file_attribute] = m_path_to_file;
+            const std::string relative_path = RemoveProjDirFromPath(m_path_to_file);
+            serialiser.SerialiseString(Constants::k_path_to_file_attribute, relative_path);
         }
         else
         {
             throw ExceptionWithStacktrace("Cannot serialize mesh not read from file.");
         }
-
-        return json;
+        // TODO: serialise meshes that are not read from file
     }
-    
-    void Mesh::Deserialize(const nlohmann::json &json)
-    {
-        namespace Constants = MeshJSONConstants;
 
-        if (json.at(Constants::k_parent_node).contains(Constants::k_path_to_file_attribute))
+    void Mesh::Deserialise(IDeserialiser &deserialiser)
+    {
+        namespace Constants = MeshSerialisationConstants;
+
+        const bool has_path = deserialiser.ContainsField(Constants::k_path_to_file_attribute);
+        if (has_path)
         {
-            std::string path = json[Constants::k_parent_node][Constants::k_path_to_file_attribute];
+            const std::string relative_path = deserialiser.DeserialiseString(Constants::k_path_to_file_attribute);
+            const std::string path = AddProjDirToPath(relative_path);
             Construct(path);
         }
-    }
-    
-    void Mesh::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
-    {
-        
+        else
+        {
+            throw ExceptionWithStacktrace("Cannot deserialize mesh not read from file.");
+        }
+        // TODO: deserialise meshes that are not read from file
     }
     
     void Mesh::Construct(const std::vector<Vector3> &vertices,

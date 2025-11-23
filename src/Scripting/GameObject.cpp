@@ -1,14 +1,11 @@
 #include "GameObject.hpp"
-#include "Utils/ExceptionWithStacktrace.hpp"
 
-#include <Components/Camera.hpp>
-#include <Components/CameraController.hpp>
-#include <Components/MeshRenderer.hpp>
-#include <Components/SkyboxFollowCamera.hpp>
-#include <Components/TestMovement.hpp>
-#include <Components/TestRotation.hpp>
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/TryCathRethrowStacktrace.hpp>
 
 #include <format>
 
@@ -125,86 +122,72 @@ namespace MG3TR
         (void)m_components.erase(m_components.begin() + position);
     }
 
-    nlohmann::json GameObject::Serialize() const
+    void GameObject::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = GameObjectJSONConstants;
+        namespace Constants = GameObjectSerialisationConstants;
 
-        nlohmann::json json;
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = m_uid;
-        json[Constants::k_parent_node][Constants::k_name_attribute] = m_name;
+        serialiser.SerialiseUnsigned(Constants::k_uid_attribute, m_uid);
+        serialiser.SerialiseString(Constants::k_name_attribute, m_name);
 
-        if (m_components.size() > 0U)
+        const std::size_t component_count = m_components.size();
+
+        if (component_count > 0U)
         {
-            std::vector<nlohmann::json> components_json;
-            components_json.reserve(m_components.size());
+            serialiser.BeginSerialisingArray(Constants::k_components_attribute, component_count);
 
             for (const auto &component : m_components)
             {
-                components_json.push_back(component->Serialize());
+                serialiser.BeginSerialisingChild(ComponentSerialisationConstants::k_parent_node);
+
+                component->Serialise(serialiser);
+
+                serialiser.EndSerialisingLastChild();
+                serialiser.EndSerialisingCurrentArrayElement();
             }
 
-            json[Constants::k_parent_node][Constants::k_components_attribute] = components_json;
+            serialiser.EndSerialisingLastArray();
         }
-
-        return json;
     }
 
-    void GameObject::Deserialize(const nlohmann::json &json)
+    void GameObject::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = GameObjectJSONConstants;
+        namespace Constants = GameObjectSerialisationConstants;
 
-        const nlohmann::json game_object_json = json.at(Constants::k_parent_node);
-        m_uid = game_object_json.at(Constants::k_uid_attribute);
-        m_name = static_cast<std::string>(game_object_json.at(Constants::k_name_attribute));
+        m_uid = deserialiser.DeserialiseUnsigned(Constants::k_uid_attribute);
+        m_name = deserialiser.DeserialiseString(Constants::k_name_attribute);
 
-        if (game_object_json.contains(Constants::k_components_attribute))
+        const bool has_components = deserialiser.ContainsField(Constants::k_components_attribute);
+        if (has_components)
         {
-            m_components.reserve(game_object_json.size());
+            const std::size_t component_count = deserialiser.BeginDeserialisingArray(Constants::k_components_attribute);
+            m_components.reserve(component_count);
 
-            for (const auto &component_json : game_object_json[Constants::k_components_attribute])
+            for (std::size_t i = 0; i < component_count; ++i)
             {
-                std::shared_ptr<Component> component = nullptr;
+                deserialiser.BeginDeserialisingChild(ComponentSerialisationConstants::k_parent_node);
 
-                if (component_json.contains(CameraJSONConstants::k_parent_node))
-                {
-                    component = std::make_shared<Camera>(shared_from_this(), m_transform.lock());
-                }
-                else if (component_json.contains(CameraControllerJSONConstants::k_parent_node))
-                {
-                    component = std::make_shared<CameraController>(shared_from_this(), m_transform.lock());
-                }
-                else if (component_json.contains(MeshRendererJSONConstants::k_parent_node))
-                {
-                    component = std::make_shared<MeshRenderer>(shared_from_this(), m_transform.lock());
-                }
-                else if (component_json.contains(SkyboxFollowCameraJSONConstants::k_parent_node))
-                {
-                    component = std::make_shared<SkyboxFollowCamera>(shared_from_this(), m_transform.lock());
-                }
-                else if (component_json.contains(TestMovementJSONConstants::k_parent_node))
-                {
-                    component = std::make_shared<TestMovement>(shared_from_this(), m_transform.lock());
-                }
-                else if (component_json.contains(TestMRotationJSONConstants::k_parent_node))
-                {
-                    component = std::make_shared<TestRotation>(shared_from_this(), m_transform.lock());
-                }
-                else
-                {
-                    throw ExceptionWithStacktrace("Invalid component to deserialize.");
-                }
-                
-                component->Deserialize(component_json);
+                const auto component_type = static_cast<ComponentType>(deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_type_attribute));
+                ComponentConstants::TComponentConstructor component_constructor;
+                TRY_CATCH_RETHROW_STACKTRACE(component_constructor = ComponentConstants::k_component_to_constructor.at(component_type));
+
+                auto component = component_constructor(shared_from_this(), m_transform.lock());
+
+                component->Deserialise(deserialiser);
                 m_components.push_back(component);
+
+                deserialiser.EndDeserialisingLastChild();
+                deserialiser.EndDeserialisingCurrentArrayElement();
             }
+
+            deserialiser.EndDeserialisingLastArray();
         }
     }
 
-    void GameObject::LateBindAfterDeserialization(Scene &scene)
+    void GameObject::LateBind(Scene &scene)
     {
         for (auto &component : m_components)
         {
-            component->LateBindAfterDeserialization(scene);
+            component->LateBind(scene);
         }
     }
 }

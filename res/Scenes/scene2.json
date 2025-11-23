@@ -6,23 +6,27 @@
                     "game object": {
                         "components": [
                             {
-                                "camera": {
+                                "component": {
                                     "aspect ratio": 1.3333333730697632,
                                     "camera mode": 0,
                                     "fov": 1.5707963705062866,
+                                    "type": 0,
+                                    "type name": "camera",
                                     "uid": 0,
-                                    "xmax": 9.401847253687956e-38,
-                                    "xmin": 3.0968696061578457e-41,
-                                    "ymax": 9.401865190308299e-38,
-                                    "ymin": 3.0968696061578457e-41,
+                                    "xmax": -4.973751697199263e-32,
+                                    "xmin": 3.0893025944504917e-41,
+                                    "ymax": -4.973770505108876e-32,
+                                    "ymin": 3.0893025944504917e-41,
                                     "zfar": 300.0,
                                     "znear": 0.0010000000474974513
                                 }
                             },
                             {
-                                "camera controller": {
+                                "component": {
                                     "move speed": 5.0,
                                     "run speed": 12.0,
+                                    "type": 1,
+                                    "type name": "camera controller",
                                     "uid": 1,
                                     "walk speed": 2.0
                                 }
@@ -58,24 +62,30 @@
                                 "game object": {
                                     "components": [
                                         {
-                                            "test movement": {
-                                                "uid": 5
-                                            }
-                                        },
-                                        {
-                                            "mesh renderer": {
+                                            "component": {
                                                 "camera uid": 0,
                                                 "mesh": {
                                                     "path to file": "res/Models/Cube/cube.obj"
                                                 },
                                                 "shader": {
-                                                    "fragment normal shader": {
-                                                        "camera uid": 0,
-                                                        "object transform uid": 3
-                                                    }
+                                                    "camera uid": 0,
+                                                    "fragment shader": "res/Shaders/FragmentNormal.frag",
+                                                    "object transform uid": 3,
+                                                    "type": 1,
+                                                    "type name": "fragment normal shader",
+                                                    "vertex shader": "res/Shaders/FragmentNormal.vert"
                                                 },
+                                                "type": 2,
+                                                "type name": "mesh renderer",
                                                 "uid": 4,
                                                 "use frustum culling": true
+                                            }
+                                        },
+                                        {
+                                            "component": {
+                                                "type": 4,
+                                                "type name": "test movement",
+                                                "uid": 5
                                             }
                                         }
                                     ],
@@ -83,8 +93,8 @@
                                     "uid": 2
                                 },
                                 "local position": [
-                                    -0.21427686512470245,
-                                    1.4643077850341797,
+                                    0.0,
+                                    2.0,
                                     0.0
                                 ],
                                 "local rotation": [
@@ -105,23 +115,29 @@
                     "game object": {
                         "components": [
                             {
-                                "mesh renderer": {
+                                "component": {
                                     "camera uid": 0,
                                     "mesh": {
                                         "path to file": "res/Models/Cube/cube.obj"
                                     },
                                     "shader": {
-                                        "fragment normal shader": {
-                                            "camera uid": 0,
-                                            "object transform uid": 2
-                                        }
+                                        "camera uid": 0,
+                                        "fragment shader": "res/Shaders/FragmentNormal.frag",
+                                        "object transform uid": 2,
+                                        "type": 1,
+                                        "type name": "fragment normal shader",
+                                        "vertex shader": "res/Shaders/FragmentNormal.vert"
                                     },
+                                    "type": 2,
+                                    "type name": "mesh renderer",
                                     "uid": 2,
                                     "use frustum culling": true
                                 }
                             },
                             {
-                                "test rotation": {
+                                "component": {
+                                    "type": 5,
+                                    "type name": "test rotation",
                                     "uid": 3
                                 }
                             }
@@ -135,9 +151,9 @@
                         1.0
                     ],
                     "local rotation": [
-                        -0.8762674331665039,
+                        0.7071067690849304,
                         0.0,
-                        0.4818239212036133,
+                        0.7071067690849304,
                         0.0
                     ],
                     "local scale": [
@@ -156,17 +172,21 @@
                                 "game object": {
                                     "components": [
                                         {
-                                            "mesh renderer": {
+                                            "component": {
                                                 "camera uid": 0,
                                                 "mesh": {
                                                     "path to file": "res/Models/Sphere/sphere.obj"
                                                 },
                                                 "shader": {
-                                                    "fragment normal shader": {
-                                                        "camera uid": 0,
-                                                        "object transform uid": 5
-                                                    }
+                                                    "camera uid": 0,
+                                                    "fragment shader": "res/Shaders/FragmentNormal.frag",
+                                                    "object transform uid": 5,
+                                                    "type": 1,
+                                                    "type name": "fragment normal shader",
+                                                    "vertex shader": "res/Shaders/FragmentNormal.vert"
                                                 },
+                                                "type": 2,
+                                                "type name": "mesh renderer",
                                                 "uid": 7,
                                                 "use frustum culling": true
                                             }
@@ -198,23 +218,27 @@
                     "game object": {
                         "components": [
                             {
-                                "mesh renderer": {
+                                "component": {
                                     "camera uid": 0,
                                     "mesh": {
                                         "path to file": "res/Models/Creeper/creeper.obj"
                                     },
                                     "shader": {
-                                        "texture and lighting shader": {
-                                            "camera uid": 0,
-                                            "light position": [
-                                                1000.0,
-                                                1000.0,
-                                                1000.0
-                                            ],
-                                            "object transform uid": 4,
-                                            "texture path": "res/Models/Creeper/creeper.png"
-                                        }
+                                        "camera uid": 0,
+                                        "fragment shader": "res/Shaders/TextureAndLighting.frag",
+                                        "light position": [
+                                            1000.0,
+                                            1000.0,
+                                            1000.0
+                                        ],
+                                        "object transform uid": 4,
+                                        "texture path": "res/Models/Creeper/creeper.png",
+                                        "type": 2,
+                                        "type name": "texture and lighting shader",
+                                        "vertex shader": "res/Shaders/TextureAndLighting.vert"
                                     },
+                                    "type": 2,
+                                    "type name": "mesh renderer",
                                     "uid": 6,
                                     "use frustum culling": true
                                 }
@@ -247,23 +271,27 @@
                     "game object": {
                         "components": [
                             {
-                                "mesh renderer": {
+                                "component": {
                                     "camera uid": 0,
                                     "mesh": {
                                         "path to file": "res/Models/MinecraftScene/Mineways2Skfb.obj"
                                     },
                                     "shader": {
-                                        "texture and lighting shader": {
-                                            "camera uid": 0,
-                                            "light position": [
-                                                1000.0,
-                                                1000.0,
-                                                1000.0
-                                            ],
-                                            "object transform uid": 6,
-                                            "texture path": "res/Models/MinecraftScene/Mineways2Skfb-RGBA.png"
-                                        }
+                                        "camera uid": 0,
+                                        "fragment shader": "res/Shaders/TextureAndLighting.frag",
+                                        "light position": [
+                                            1000.0,
+                                            1000.0,
+                                            1000.0
+                                        ],
+                                        "object transform uid": 6,
+                                        "texture path": "res/Models/MinecraftScene/Mineways2Skfb-RGBA.png",
+                                        "type": 2,
+                                        "type name": "texture and lighting shader",
+                                        "vertex shader": "res/Shaders/TextureAndLighting.vert"
                                     },
+                                    "type": 2,
+                                    "type name": "mesh renderer",
                                     "uid": 8,
                                     "use frustum culling": true
                                 }
@@ -296,25 +324,31 @@
                     "game object": {
                         "components": [
                             {
-                                "mesh renderer": {
+                                "component": {
                                     "camera uid": 0,
                                     "mesh": {
                                         "path to file": "res/Models/Skybox/skybox.obj"
                                     },
                                     "shader": {
-                                        "texture shader": {
-                                            "camera uid": 0,
-                                            "object transform uid": 7,
-                                            "texture path": "res/Models/Skybox/skybox.png"
-                                        }
+                                        "camera uid": 0,
+                                        "fragment shader": "res/Shaders/Texture.frag",
+                                        "object transform uid": 7,
+                                        "texture path": "res/Models/Skybox/skybox.png",
+                                        "type": 3,
+                                        "type name": "texture shader",
+                                        "vertex shader": "res/Shaders/Texture.vert"
                                     },
+                                    "type": 2,
+                                    "type name": "mesh renderer",
                                     "uid": 9,
                                     "use frustum culling": false
                                 }
                             },
                             {
-                                "skybox follow camera": {
+                                "component": {
                                     "camera uid": 1,
+                                    "type": 3,
+                                    "type name": "skybox follow camera",
                                     "uid": 10
                                 }
                             }
@@ -324,8 +358,8 @@
                     },
                     "local position": [
                         0.0,
-                        3.0,
-                        -5.0
+                        0.0,
+                        0.0
                     ],
                     "local rotation": [
                         -4.371138828673793e-08,
@@ -346,23 +380,27 @@
                     "game object": {
                         "components": [
                             {
-                                "mesh renderer": {
+                                "component": {
                                     "camera uid": 0,
                                     "mesh": {
                                         "path to file": "res/Models/Sphere/sphere.obj"
                                     },
                                     "shader": {
-                                        "texture and lighting shader": {
-                                            "camera uid": 0,
-                                            "light position": [
-                                                1000.0,
-                                                1000.0,
-                                                1000.0
-                                            ],
-                                            "object transform uid": 8,
-                                            "texture path": "res/Models/Sphere/planet.png"
-                                        }
+                                        "camera uid": 0,
+                                        "fragment shader": "res/Shaders/TextureAndLighting.frag",
+                                        "light position": [
+                                            1000.0,
+                                            1000.0,
+                                            1000.0
+                                        ],
+                                        "object transform uid": 8,
+                                        "texture path": "res/Models/Sphere/planet.png",
+                                        "type": 2,
+                                        "type name": "texture and lighting shader",
+                                        "vertex shader": "res/Shaders/TextureAndLighting.vert"
                                     },
+                                    "type": 2,
+                                    "type name": "mesh renderer",
                                     "uid": 11,
                                     "use frustum culling": true
                                 }

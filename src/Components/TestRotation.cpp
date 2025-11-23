@@ -1,10 +1,13 @@
 #include "TestRotation.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Math/Math.hxx>
 #include <Math/Vector3.hpp>
 #include <Math/Quaternion.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 
 namespace MG3TR
 {
@@ -24,25 +27,22 @@ namespace MG3TR
 
         transform->SetWorldRotation(world_rotation);
     }
-    
-    nlohmann::json TestRotation::Serialize() const
-    {
-        namespace Constants = TestMRotationJSONConstants;
 
-        nlohmann::json json;
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
-        return json;
-    }
-    
-    void TestRotation::Deserialize(const nlohmann::json &json)
+    void TestRotation::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = TestMRotationJSONConstants;
+        namespace Constants = TestRotationSerialisationConstants;
 
-        SetUID(json.at(Constants::k_parent_node).at(Constants::k_uid_attribute));
+        const TUID uid = GetUID();
+        const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
+
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
     }
-    
-    void TestRotation::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
+
+    void TestRotation::Deserialise(IDeserialiser &deserialiser)
     {
-        
+        const TUID uid = deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute);
+        SetUID(uid);
     }
 }

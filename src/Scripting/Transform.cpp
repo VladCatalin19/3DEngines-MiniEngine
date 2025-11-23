@@ -1,9 +1,11 @@
 #include "Transform.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Constants/MathConstants.hpp>
 #include <Math/Vector4.hpp>
 #include <Scripting/GameObject.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
@@ -292,6 +294,95 @@ namespace MG3TR
         (void)m_children.erase(m_children.begin() + position);
     }
 
+    void Transform::Serialise(ISerialiser &serialiser)
+    {
+        namespace Constants = TransformSerialisationConstants;
+
+        serialiser.SerialiseUnsigned(Constants::k_uid_attribute, m_uid);
+        serialiser.SerialiseVector3(Constants::k_local_position_attribute, m_local_position);
+        serialiser.SerialiseQuaternion(Constants::k_local_rotation_attribute, m_local_rotation);
+        serialiser.SerialiseVector3(Constants::k_local_scale_attribute, m_local_scale);
+
+        const std::size_t child_count = m_children.size();
+
+        if (child_count > 0U)
+        {
+            serialiser.BeginSerialisingArray(Constants::k_children_attribute, child_count);
+
+            for (const auto &child : m_children)
+            {
+                serialiser.BeginSerialisingChild(Constants::k_parent_node);
+
+                child->Serialise(serialiser);
+
+                serialiser.EndSerialisingLastChild();
+                serialiser.EndSerialisingCurrentArrayElement();
+            }
+
+            serialiser.EndSerialisingLastArray();
+        }
+
+        if (m_game_object != nullptr)
+        {
+            serialiser.BeginSerialisingChild(GameObjectSerialisationConstants::k_parent_node);
+            m_game_object->Serialise(serialiser);
+            serialiser.EndSerialisingLastChild();
+        }
+    }
+
+    void Transform::Deserialise(IDeserialiser &deserialiser)
+    {
+        namespace Constants = TransformSerialisationConstants;
+
+        m_uid = deserialiser.DeserialiseUnsigned(Constants::k_uid_attribute);
+        m_local_position = deserialiser.DeserialiseVector3(Constants::k_local_position_attribute);
+        m_local_rotation = deserialiser.DeserialiseQuaternion(Constants::k_local_rotation_attribute);
+        m_local_scale = deserialiser.DeserialiseVector3(Constants::k_local_scale_attribute);
+
+        const bool has_children = deserialiser.ContainsField(Constants::k_children_attribute);
+        if (has_children)
+        {
+            const std::size_t child_count = deserialiser.BeginDeserialisingArray(Constants::k_children_attribute);
+            m_children.reserve(child_count);
+
+            for (std::size_t i = 0; i < child_count; ++i)
+            {
+                auto child = Transform::Create();
+                child->SetParent(shared_from_this());
+
+                deserialiser.BeginDeserialisingChild(Constants::k_parent_node);
+                child->Deserialise(deserialiser);
+                deserialiser.EndDeserialisingLastChild();
+                deserialiser.EndDeserialisingCurrentArrayElement();
+            }
+
+            deserialiser.EndDeserialisingLastArray();
+        }
+
+        const bool has_game_object = deserialiser.ContainsField(Constants::k_game_object_attribute);
+        if (has_game_object)
+        {
+            m_game_object = GameObject::Create();
+            m_game_object->SetTransform(shared_from_this());
+            
+            deserialiser.BeginDeserialisingChild(GameObjectSerialisationConstants::k_parent_node);
+            m_game_object->Deserialise(deserialiser);
+            deserialiser.EndDeserialisingLastChild();
+        }
+    }
+
+    void Transform::LateBind(Scene &scene)
+    {
+        if (m_game_object != nullptr)
+        {
+            m_game_object->LateBind(scene);
+        }
+        for (auto &child : m_children)
+        {
+            child->LateBind(scene);
+        }
+    }
+
     Matrix4x4 Transform::CalculateLocalToWorldModelMatrix() const
     {
         Matrix4x4 local_matrix(1.0F);
@@ -406,102 +497,6 @@ namespace MG3TR
             child->m_world_to_local_scale = CalculateWorldToLocalScale(child->m_local_to_world_scale);
 
             child->UpdateLocalToWorldAndWorldToLocalVariablesForChildren();
-        }
-    }
-
-    nlohmann::json Transform::Serialize() const
-    {
-        namespace Constants = TransformJSONConstants;
-
-        nlohmann::json json;
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = m_uid;
-        json[Constants::k_parent_node][Constants::k_local_position_attribute] = {
-            m_local_position.x(), m_local_position.y(), m_local_position.z()
-        };
-        json[Constants::k_parent_node][Constants::k_local_rotation_attribute] = {
-            m_local_rotation.w(), m_local_rotation.x(), m_local_rotation.y(), m_local_rotation.z()
-        };
-        json[Constants::k_parent_node][Constants::k_local_scale_attribute] = {
-            m_local_scale.x(), m_local_scale.y(), m_local_scale.z()
-        };
-
-        if (m_children.size() > 0U)
-        {
-            std::vector<nlohmann::json> children_json;
-            children_json.reserve(m_children.size());
-
-            for (const auto &child : m_children)
-            {
-                children_json.push_back(child->Serialize());
-            }
-
-            json[Constants::k_parent_node][Constants::k_game_object_attribute] = children_json;
-        }
-
-        if (m_game_object != nullptr)
-        {
-            const auto &game_object_json = m_game_object->Serialize()[GameObjectJSONConstants::k_parent_node];
-            json[Constants::k_parent_node][Constants::k_game_object_attribute] = game_object_json;
-        }
-
-        return json;
-    }
-
-    void Transform::Deserialize(const nlohmann::json &json)
-    {
-        namespace Constants = TransformJSONConstants;
-
-        const auto &transform_json = json.at(Constants::k_parent_node);
-        const auto &local_position_json = transform_json.at(Constants::k_local_position_attribute);
-        const auto &local_rotation_json = transform_json.at(Constants::k_local_rotation_attribute);
-        const auto &local_scale_json = transform_json.at(Constants::k_local_scale_attribute);
-        
-        m_uid = transform_json.at(Constants::k_uid_attribute);
-
-        m_local_position.x() = local_position_json.at(0);
-        m_local_position.y() = local_position_json.at(1);
-        m_local_position.z() = local_position_json.at(2);
-
-        m_local_rotation.w() = local_rotation_json.at(0);
-        m_local_rotation.x() = local_rotation_json.at(1);
-        m_local_rotation.y() = local_rotation_json.at(2);
-        m_local_rotation.z() = local_rotation_json.at(3);
-
-        m_local_scale.x() = local_scale_json.at(0);
-        m_local_scale.y() = local_scale_json.at(1);
-        m_local_scale.z() = local_scale_json.at(2);
-
-        if (transform_json.contains(Constants::k_children_attribute))
-        {
-            const nlohmann::json children_json;
-            m_children.reserve(children_json.size());
-
-            for (const auto &child_json : transform_json[Constants::k_children_attribute])
-            {
-                auto child = Transform::Create();
-                child->SetParent(shared_from_this());
-                child->Deserialize(child_json);
-            }
-        }
-
-        if (transform_json.contains(Constants::k_game_object_attribute))
-        {
-            m_game_object = GameObject::Create();
-            m_game_object->SetTransform(shared_from_this());
-            
-            m_game_object->Deserialize(transform_json);
-        }
-    }
-
-    void Transform::LateBindAfterDeserialization(Scene &scene)
-    {
-        if (m_game_object != nullptr)
-        {
-            m_game_object->LateBindAfterDeserialization(scene);
-        }
-        for (auto &child : m_children)
-        {
-            child->LateBindAfterDeserialization(scene);
         }
     }
 }

@@ -1,9 +1,12 @@
 #include "SkyboxFollowCamera.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Scene/Scene.hpp>
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
@@ -30,28 +33,33 @@ namespace MG3TR
         const auto camera_world_position = m_camera.lock()->GetWorldPosition();
         GetTransform().lock()->SetWorldPosition(camera_world_position);
     }
-    
-    nlohmann::json SkyboxFollowCamera::Serialize() const
+
+    void SkyboxFollowCamera::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = SkyboxFollowCameraJSONConstants;
+        namespace Constants = SkyboxFollowCameraSerialisationConstants;
 
-        nlohmann::json json;
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
-        json[Constants::k_parent_node][Constants::k_camera_uid_attribute] = m_camera.lock()->GetUID();
-        return json;
+        const TUID uid = GetUID();
+        const TUID camera_uid = m_camera.lock()->GetUID();
+        const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
+
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
+
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
     }
-    
-    void SkyboxFollowCamera::Deserialize(const nlohmann::json &json)
+
+    void SkyboxFollowCamera::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = SkyboxFollowCameraJSONConstants;
+        namespace Constants = SkyboxFollowCameraSerialisationConstants;
+        
+        const TUID uid = deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute);
+        SetUID(uid);
 
-        nlohmann::json script_json = json.at(Constants::k_parent_node);
-
-        SetUID(script_json.at(Constants::k_uid_attribute));
-        m_camera_uid = script_json.at(Constants::k_camera_uid_attribute);
+        m_camera_uid = deserialiser.DeserialiseUnsigned(Constants::k_camera_uid_attribute);
     }
-    
-    void SkyboxFollowCamera::LateBindAfterDeserialization(Scene &scene)
+
+    void SkyboxFollowCamera::LateBind(Scene &scene)
     {
         auto found_camera = scene.FindTransformWithUID(m_camera_uid);
 

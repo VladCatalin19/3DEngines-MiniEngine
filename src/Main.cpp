@@ -26,6 +26,10 @@
 
 #include <memory>
 
+#define BUILD_SCENE_INSTEAD_OF_READING true
+
+#if BUILD_SCENE_INSTEAD_OF_READING
+
 static std::shared_ptr<MG3TR::Camera> CreateCameraAndAddItToScene(MG3TR::Scene &scene)
 {
     auto camera_game_object = MG3TR::GameObject::Create("Camera");
@@ -227,6 +231,7 @@ static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std:
 
     return planet_game_object;
 }
+#endif
 
 int main()
 {
@@ -240,17 +245,20 @@ int main()
     auto scene = std::make_unique<MG3TR::Scene>();
     auto& scene_ref = *scene;
 
-    auto camera = CreateCameraAndAddItToScene(scene_ref);
-    auto rotating_cube_game_object = CreateRotatingCubeAndAddItToScene(scene_ref, camera);
-    (void)CreateSecondRotatingCubeAndAddItAsChildToTheFirstCube(camera, rotating_cube_game_object);
-    (void)CreateCreeper(scene_ref, camera);
-    (void)CreateMap(scene_ref, camera);
-    (void)CreateSkyBox(scene_ref, camera);
-    (void)CreatePlanet(scene_ref, camera);
-    //m_scene->LoadFromFile("res/Scenes/test2.json");
+#   if BUILD_SCENE_INSTEAD_OF_READING
+        auto camera = CreateCameraAndAddItToScene(scene_ref);
+        auto rotating_cube_game_object = CreateRotatingCubeAndAddItToScene(scene_ref, camera);
+        (void)CreateSecondRotatingCubeAndAddItAsChildToTheFirstCube(camera, rotating_cube_game_object);
+        (void)CreateCreeper(scene_ref, camera);
+        (void)CreateMap(scene_ref, camera);
+        (void)CreateSkyBox(scene_ref, camera);
+        (void)CreatePlanet(scene_ref, camera);
 
-    //m_scene->SaveToFile("res/Scenes/test2.json");
-    //Scene scene("res/Scenes/test1.json");
+        scene_ref.SaveToFile(MG3TR_ROOT_DIR "res/Scenes/scene1.json");
+#   else
+        scene_ref.LoadFromFile(MG3TR_ROOT_DIR "res/Scenes/scene1.json");
+        scene_ref.SaveToFile(MG3TR_ROOT_DIR "res/Scenes/scene2.json");
+#   endif
 
     window.SetScene(std::move(scene));
 

@@ -1,14 +1,14 @@
 #include "MeshRenderer.hpp"
 
 #include <Components/Camera.hpp>
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/ShaderConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Constants/MathConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Graphics/Mesh.hpp>
 #include <Graphics/Shader.hpp>
-#include <Graphics/Shaders/FragmentNormalShader.hpp>
-#include <Graphics/Shaders/TextureAndLightingShader.hpp>
-#include <Graphics/Shaders/TextureShader.hpp>
+#include <Graphics/ShaderType.hpp>
 #include <Math/Math.hxx>
 #include <Math/Frustum.hpp>
 #include <Math/Matrix4x4.hpp>
@@ -17,7 +17,10 @@
 #include <Scene/Scene.hpp>
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/TryCathRethrowStacktrace.hpp>
 
 static MG3TR::Sphere CalculateMeshBoundingSphereRadiusInWorldSpace(const MG3TR::Mesh &mesh)
 {
@@ -106,62 +109,62 @@ namespace MG3TR
             api.DrawSubMesh(submesh);
         }
     }
-    
-    nlohmann::json MeshRenderer::Serialize() const
+
+    void MeshRenderer::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = MeshRendererJSONConstants;
+        namespace Constants = MeshRendererSerialisationConstants;
 
-        nlohmann::json json;
+        const TUID uid = GetUID();
+        const TUID camera_uid = m_camera.lock()->GetUID();
+        const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
 
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
-        json[Constants::k_parent_node][Constants::k_mesh_attribute] = m_mesh->Serialize()["mesh"];
-        json[Constants::k_parent_node][Constants::k_shader_attribute] = m_shader->Serialize();
-        json[Constants::k_parent_node][Constants::k_camera_uid_attribute] = m_camera.lock()->GetUID();
-        json[Constants::k_parent_node][Constants::k_use_frustum_culling_attribute] = m_use_frustum_culling;
-        return json;
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
+
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
+        serialiser.SerialiseBool(Constants::k_use_frustum_culling_attribute, m_use_frustum_culling);
+
+        serialiser.BeginSerialisingChild(Constants::k_mesh_attribute);
+        m_mesh->Serialise(serialiser);
+        serialiser.EndSerialisingLastChild();
+
+        serialiser.BeginSerialisingChild(Constants::k_shader_attribute);
+        m_shader->Serialise(serialiser);
+        serialiser.EndSerialisingLastChild();
     }
-    
-    void MeshRenderer::Deserialize(const nlohmann::json &json)
+
+    void MeshRenderer::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = MeshRendererJSONConstants;
+        namespace Constants = MeshRendererSerialisationConstants;
 
-        nlohmann::json renderer_json = json.at(Constants::k_parent_node);
-
-        SetUID(renderer_json.at(Constants::k_uid_attribute));
+        const TUID uid = deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute);
+        SetUID(uid);
 
         m_mesh = std::make_shared<Mesh>();
-        m_mesh->Deserialize(renderer_json);
+
+        deserialiser.BeginDeserialisingChild(Constants::k_mesh_attribute);
+        m_mesh->Deserialise(deserialiser);
+        deserialiser.EndDeserialisingLastChild();
+
         m_mesh_bounding_sphere = CalculateMeshBoundingSphereRadiusInWorldSpace(*m_mesh);
+        m_camera_uid = deserialiser.DeserialiseUnsigned(Constants::k_camera_uid_attribute);
+        m_use_frustum_culling = deserialiser.DeserialiseBool(Constants::k_use_frustum_culling_attribute);
 
-        nlohmann::json shader_json = renderer_json.at(Constants::k_shader_attribute);
+        deserialiser.BeginDeserialisingChild(Constants::k_shader_attribute);
 
-        if (shader_json.contains(ShaderJSONConstants::k_parent_node))
-        {
-            m_shader = std::make_shared<Shader>();
-        }
-        else if (shader_json.contains(TextureShaderJSONConstants::k_parent_node))
-        {
-            m_shader = std::make_shared<TextureShader>();
-        }
-        else if (shader_json.contains(TextureAndLightingShaderJSONConstants::k_parent_node))
-        {
-            m_shader = std::make_shared<TextureAndLightingShader>();
-        }
-        else if (shader_json.contains(FragmentNormalShaderJSONConstants::k_parent_node))
-        {
-            m_shader = std::make_shared<FragmentNormalShader>();
-        }
-        else
-        {
-            throw ExceptionWithStacktrace("Could not determine what shader was used!" + shader_json.dump());
-        }
-        m_shader->Deserialize(shader_json);
+        const auto shader_type = static_cast<ShaderType>(deserialiser.DeserialiseUnsigned(ShaderSerialisationConstants::k_type_attribute));
+        ShaderConstants::TShaderConstructor shader_constructor;
+        TRY_CATCH_RETHROW_STACKTRACE(shader_constructor = ShaderConstants::k_shader_to_constructor.at(shader_type));
 
-        m_camera_uid = renderer_json.at(Constants::k_camera_uid_attribute);
-        m_use_frustum_culling = renderer_json.at(Constants::k_use_frustum_culling_attribute);
+        m_shader = shader_constructor();
+
+        m_shader->Deserialise(deserialiser);
+
+        deserialiser.EndDeserialisingLastChild();
     }
-    
-    void MeshRenderer::LateBindAfterDeserialization(Scene &scene) 
+
+    void MeshRenderer::LateBind(Scene &scene)
     {
         auto found_camera = scene.FindCameraWithUID(m_camera_uid);
 
@@ -172,8 +175,7 @@ namespace MG3TR
         }
         m_camera = found_camera;
 
-        m_mesh->LateBindAfterDeserialization(scene);
-        m_shader->LateBindAfterDeserialization(scene);
+        m_shader->LateBind(scene);
     }
 
     void MeshRenderer::Construct(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,

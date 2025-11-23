@@ -38,9 +38,9 @@ namespace MG3TR
         virtual void SetUniforms() override;
         virtual void BindAdditionals() override;
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
+        virtual void LateBind(Scene &scene) override;
 
     private:
         void Construct(const std::weak_ptr<Camera> &camera, const std::weak_ptr<Transform> &object_transform,

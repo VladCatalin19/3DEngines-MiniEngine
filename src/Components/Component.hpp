@@ -1,8 +1,9 @@
 #ifndef MG3TR_SRC_COMPONENTS_COMPONENT_HPP_INCLUDED
 #define MG3TR_SRC_COMPONENTS_COMPONENT_HPP_INCLUDED
 
+#include <Scene/ILateBindable.hpp>
+#include <Serialisation/ISerialisable.hpp>
 #include <Utils/UIDGenerator.hpp>
-#include <Scene/IJsonSerializeable.hpp>
 
 #include <memory>
 
@@ -12,7 +13,7 @@ namespace MG3TR
     class Transform;
     class Input;
 
-    class Component : public IJsonSerializeable
+    class Component : public ISerialisable, public ILateBindable
     {
     private:
         std::weak_ptr<GameObject> m_game_object;
@@ -52,9 +53,7 @@ namespace MG3TR
         virtual void FrameUpdate([[maybe_unused]] const float delta_time);
         virtual void FrameEnd([[maybe_unused]] const float delta_time);
 
-        virtual nlohmann::json Serialize() const = 0;
-        virtual void Deserialize(const nlohmann::json& json) = 0;
-        virtual void LateBindAfterDeserialization(Scene& scene) = 0;
+        virtual void LateBind([[maybe_unused]] Scene &scene) override;
     };
 }
 

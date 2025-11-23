@@ -1,9 +1,12 @@
 #include "TestMovement.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/ComponentConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Constants/MathConstants.hpp>
 #include <Math/Math.hxx>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 
 namespace MG3TR
 {
@@ -30,25 +33,22 @@ namespace MG3TR
 
         GetTransform().lock()->SetLocalPosition(position);
     }
-    
-    nlohmann::json TestMovement::Serialize() const
-    {
-        namespace Constants = TestMovementJSONConstants;
 
-        nlohmann::json json;
-        json[Constants::k_parent_node][Constants::k_uid_attribute] = GetUID();
-        return json;
-    }
-    
-    void TestMovement::Deserialize(const nlohmann::json &json)
+    void TestMovement::Serialise(ISerialiser &serialiser)
     {
-        namespace Constants = TestMovementJSONConstants;
+        namespace Constants = TestMovementSerialisationConstants;
 
-        SetUID(json.at(Constants::k_parent_node).at(Constants::k_uid_attribute));
+        const TUID uid = GetUID();
+        const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
+
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
+        serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
     }
-    
-    void TestMovement::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
+
+    void TestMovement::Deserialise(IDeserialiser &deserialiser)
     {
-        
+        const TUID uid = deserialiser.DeserialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute);
+        SetUID(uid);
     }
 }

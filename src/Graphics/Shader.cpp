@@ -1,8 +1,12 @@
 #include "Shader.hpp"
 
-#include <Constants/JSONConstants.hpp>
+#include <Constants/SerialisationConstants.hpp>
+#include <Constants/ShaderConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
+#include <Serialisation/IDeserialiser.hpp>
+#include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/ProjDirOperations.hpp>
 
 #include <fstream>
 #include <iterator>
@@ -116,33 +120,45 @@ namespace MG3TR
     {
 
     }
-    
-    nlohmann::json Shader::Serialize() const
-    {
-        namespace Constants = ShaderJSONConstants;
 
-        nlohmann::json json;
-        json[Constants::k_parent_node][Constants::k_vertex_shader_attribute] = m_vertex_shader_path;
-        if (!m_geometry_shader_path.empty())
+    void Shader::Serialise(ISerialiser &serialiser)
+    {
+        namespace Constants = ShaderSerialisationConstants;
+
+        const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
+        const std::string relative_vertex_shader_path = RemoveProjDirFromPath(m_vertex_shader_path);
+        const std::string relative_fragment_shader_path = RemoveProjDirFromPath(m_fragment_shader_path);
+
+        serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
+        serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
+
+        serialiser.SerialiseString(Constants::k_vertex_shader_attribute, relative_vertex_shader_path);
+        serialiser.SerialiseString(Constants::k_fragment_shader_attribute, relative_fragment_shader_path);
+
+        const bool has_geometry_shader = !m_geometry_shader_path.empty();
+        if (has_geometry_shader)
         {
-            json[Constants::k_parent_node][Constants::k_geometry_shader_attribute] = m_geometry_shader_path;
+            const std::string relative_geometry_shader_path = RemoveProjDirFromPath(m_geometry_shader_path);
+            serialiser.SerialiseString(Constants::k_geometry_shader_attribute, relative_geometry_shader_path);
         }
-        json[Constants::k_parent_node][Constants::k_fragment_shader_attribute] = m_fragment_shader_path;
-        return json;
     }
-    
-    void Shader::Deserialize(const nlohmann::json &json)
+
+    void Shader::Deserialise(IDeserialiser &deserialiser)
     {
-        namespace Constants = ShaderJSONConstants;
+        namespace Constants = ShaderSerialisationConstants;
 
-        nlohmann::json shader_json = json.at(Constants::k_parent_node);
+        const std::string relative_vertex_shader_path = deserialiser.DeserialiseString(Constants::k_vertex_shader_attribute);
+        const std::string relative_fragment_shader_path = deserialiser.DeserialiseString(Constants::k_fragment_shader_attribute);
 
-        std::string vertex_shader_path = shader_json.at(Constants::k_vertex_shader_attribute);
-        std::string fragment_shader_path = shader_json.at(Constants::k_fragment_shader_attribute);
+        const std::string vertex_shader_path = AddProjDirToPath(relative_vertex_shader_path);
+        const std::string fragment_shader_path = AddProjDirToPath(relative_fragment_shader_path);
 
-        if (shader_json.contains(Constants::k_geometry_shader_attribute))
+        const bool has_geometry_shader = deserialiser.ContainsField(Constants::k_geometry_shader_attribute);
+        if (has_geometry_shader)
         {
-            std::string geometry_shader_path = shader_json[Constants::k_geometry_shader_attribute];
+            const std::string relative_geometry_shader_path = deserialiser.DeserialiseString(Constants::k_geometry_shader_attribute);
+            const std::string geometry_shader_path = AddProjDirToPath(relative_geometry_shader_path);
+
             Construct(vertex_shader_path, geometry_shader_path, fragment_shader_path);
         }
         else
@@ -150,10 +166,10 @@ namespace MG3TR
             Construct(vertex_shader_path, fragment_shader_path);
         }
     }
-    
-    void Shader::LateBindAfterDeserialization([[maybe_unused]] Scene &scene) 
+
+    void Shader::LateBind([[maybe_unused]] Scene &scene)
     {
-        
+
     }
     
     void Shader::Construct(const std::string &vertex_shader_path, const std::string &fragment_shader_path)
@@ -168,9 +184,9 @@ namespace MG3TR
         m_vertex_shader_path = vertex_shader_path;
         m_geometry_shader_path = "";
         m_fragment_shader_path = fragment_shader_path;
-        m_vertex_shader = api.CreateShader(TShaderType::VertexShader, ReadFileInString(vertex_shader_path), vertex_shader_path);
+        m_vertex_shader = api.CreateShader(GPUShaderType::VertexShader, ReadFileInString(vertex_shader_path), vertex_shader_path);
         m_geometry_shader = 0;
-        m_fragment_shader = api.CreateShader(TShaderType::FragmentShader, ReadFileInString(fragment_shader_path), fragment_shader_path);
+        m_fragment_shader = api.CreateShader(GPUShaderType::FragmentShader, ReadFileInString(fragment_shader_path), fragment_shader_path);
         m_program = api.CreateShaderProgram(m_vertex_shader, m_fragment_shader);
     }
     
@@ -182,9 +198,9 @@ namespace MG3TR
         m_vertex_shader_path = vertex_shader_path;
         m_geometry_shader_path = geometry_shader_path;
         m_fragment_shader_path = fragment_shader_path;
-        m_vertex_shader = api.CreateShader(TShaderType::VertexShader, ReadFileInString(vertex_shader_path), vertex_shader_path);
-        m_geometry_shader = api.CreateShader(TShaderType::GeometryShader, ReadFileInString(geometry_shader_path), geometry_shader_path);
-        m_fragment_shader = api.CreateShader(TShaderType::FragmentShader, ReadFileInString(fragment_shader_path), fragment_shader_path);
+        m_vertex_shader = api.CreateShader(GPUShaderType::VertexShader, ReadFileInString(vertex_shader_path), vertex_shader_path);
+        m_geometry_shader = api.CreateShader(GPUShaderType::GeometryShader, ReadFileInString(geometry_shader_path), geometry_shader_path);
+        m_fragment_shader = api.CreateShader(GPUShaderType::FragmentShader, ReadFileInString(fragment_shader_path), fragment_shader_path);
         m_program = api.CreateShaderProgram(m_vertex_shader, m_geometry_shader, m_fragment_shader);
     }
 

@@ -40,9 +40,9 @@ namespace MG3TR
 
         virtual void FrameEnd([[maybe_unused]] const float delta_time) override;
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
+        virtual void LateBind(Scene &scene) override;
 
     private:
         void Construct(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform,

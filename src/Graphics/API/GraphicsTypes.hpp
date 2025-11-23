@@ -11,7 +11,7 @@ namespace MG3TR
     using TShaderID = unsigned;
     using TShaderProgramID = unsigned;
 
-    enum class TShaderType : unsigned char
+    enum class GPUShaderType : unsigned char
     {
         VertexShader,
         FragmentShader,

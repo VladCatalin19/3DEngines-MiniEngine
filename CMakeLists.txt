@@ -43,6 +43,7 @@ set(CXX_DIRECTORIES
     "src/Math"
     "src/Scene"
     "src/Scripting"
+    "src/Serialisation"
     "src/Utils"
     "src/Window"
 )

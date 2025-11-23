@@ -66,9 +66,8 @@ namespace MG3TR
         float GetZnear() const;
         float GetZfar() const;
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
     };
 }
 

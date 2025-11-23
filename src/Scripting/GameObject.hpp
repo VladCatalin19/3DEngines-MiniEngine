@@ -3,7 +3,8 @@
 
 #include <Components/Component.hpp>
 #include <Scripting/Transform.hpp>
-#include <Scene/IJsonSerializeable.hpp>
+#include <Scene/ILateBindable.hpp>
+#include <Serialisation/ISerialisable.hpp>
 #include <Utils/UIDGenerator.hpp>
 
 #include <cstddef>
@@ -13,7 +14,7 @@
 
 namespace MG3TR
 {
-    class GameObject : public IJsonSerializeable, public std::enable_shared_from_this<GameObject>
+    class GameObject : public std::enable_shared_from_this<GameObject>, public ISerialisable, public ILateBindable
     {
     private:
         std::string m_name;
@@ -52,9 +53,9 @@ namespace MG3TR
         void RemoveComponent(const std::shared_ptr<Component> &component);
         void RemoveComponent(const std::size_t position);
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
+        virtual void LateBind(Scene &scene) override;
     };
 }
 

@@ -1,15 +1,17 @@
 #include "Scene.hpp"
 
 #include <Components/Camera.hpp>
+#include <Constants/SerialisationConstants.hpp>
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
+#include <Serialisation/JSONDeserialiser.hpp>
+#include <Serialisation/JSONSerialiser.hpp>
 #include <Window/Input.hpp>
 
 #include <fstream>
 #include <memory>
 #include <iomanip>
 #include <string>
-
 
 static void CallInitialize(MG3TR::Transform &root_transform)
 {
@@ -94,61 +96,6 @@ static void CallFrameEnd(MG3TR::Transform &root_transform, const float delta_tim
     {
         CallFrameEnd(*child, delta_time);
     }
-}
-
-static std::string CalculateIndentation(const unsigned indent)
-{
-    std::string result;
-
-    for (unsigned current_indent = 0U; current_indent < indent; ++current_indent)
-    {
-        result += "|...";
-    }
-    return result;
-}
-
-static std::string TransformToString(const MG3TR::Transform &transform, const unsigned indent = 0U)
-{
-    std::string result;
-    const bool has_transform_name = (transform.GetGameObject() != nullptr);
-    const std::string name = has_transform_name ? transform.GetGameObject()->GetName() : "";
-
-    result += CalculateIndentation(indent) + "Transform: " + name + "\n";
-    result += CalculateIndentation(indent + 1) + "Local Position: " + transform.GetLocalPosition().ToString() + "\n";
-    result += CalculateIndentation(indent + 1) + "Local Rotation: " + transform.GetLocalRotation().EulerAngles().ToString() + "\n";
-    result += CalculateIndentation(indent + 1) + "Local Scale:    " + transform.GetLocalScale().ToString() + "\n";
-    result += CalculateIndentation(indent + 1) + "|\n";
-    result += CalculateIndentation(indent + 1) + "World Position: " + transform.GetWorldPosition().ToString() + "\n";
-    result += CalculateIndentation(indent + 1) + "World Rotation: " + transform.GetWorldRotation().EulerAngles().ToString() + "\n";
-    result += CalculateIndentation(indent + 1) + "World Scale:    " + transform.GetWorldScale().ToString() + "\n";
-    result += CalculateIndentation(indent + 1) + "|\n";
-
-    if (transform.GetGameObject() != nullptr)
-    {
-        result += CalculateIndentation(indent + 1) + "Components:\n";
-
-        for (auto &component : transform.GetGameObject()->GetComponents())
-        {
-            result += CalculateIndentation(indent + 2) + " UID: " + std::to_string(component->GetUID()) + "\n";
-        }
-    }
-
-    result += CalculateIndentation(indent + 1) + "Children:\n";
-
-    if (transform.GetChildren().size() == 0U)
-    {
-        result += CalculateIndentation(indent + 2) + " None\n";
-        result += CalculateIndentation(indent + 2) + "|\n";
-    }
-    else
-    {
-        for (auto &child : transform.GetChildren())
-        {
-            result += TransformToString(*child, indent + 2);
-        }
-    }
-
-    return result;
 }
 
 static std::shared_ptr<MG3TR::Camera> FindCameraWithUID(const std::shared_ptr<MG3TR::Transform> &transform, MG3TR::TUID uid)
@@ -237,33 +184,42 @@ namespace MG3TR
         CallFrameUpdate(*m_root_transform, delta_time);
         CallFrameEnd(*m_root_transform, delta_time);
     }
-
-    std::string Scene::ToString() const
-    {
-        return TransformToString(*m_root_transform);
-    }
     
     void Scene::LoadFromFile(const std::string &file_name)
     {
         std::ifstream stream(file_name);
         nlohmann::json json;
+        JSONDeserialiser deserialiser;
+
         (void)(stream >> json);
+        deserialiser.SetJSON(json);
 
         m_root_transform = Transform::Create();
 
+        deserialiser.BeginDeserialisingChild(TransformSerialisationConstants::k_parent_node);
+        m_root_transform->Deserialise(deserialiser);
+        deserialiser.EndDeserialisingLastChild();
+
+        m_root_transform->LateBind(*this);
+
+        /*
         m_root_transform->Deserialize(json);
         m_root_transform->LateBindAfterDeserialization(*this);
+        */
     }
     
     void Scene::SaveToFile(const std::string &file_name) const
     {
         std::ofstream stream(file_name);
-        (void)(stream << std::setw(4) << m_root_transform->Serialize() << std::endl);
-    }
+        JSONSerialiser serialiser;
 
-    std::ostream& operator<<(std::ostream &os, const MG3TR::Scene &scene)
-    {
-        return os << scene.ToString();
+        serialiser.BeginSerialisingChild(TransformSerialisationConstants::k_parent_node);
+        m_root_transform->Serialise(serialiser);
+        serialiser.EndSerialisingLastChild();
+
+        auto json = serialiser.GetJSON();
+
+        (void)(stream << std::setw(k_serialisation_indent) << json << std::endl);
     }
 
     std::shared_ptr<Camera> Scene::FindCameraWithUID(const TUID uid)

@@ -6,13 +6,14 @@
 #include <Math/Vector3.hpp>
 #include <Math/Vector4.hpp>
 #include <Math/Matrix4x4.hpp>
-#include <Scene/IJsonSerializeable.hpp>
+#include <Scene/ILateBindable.hpp>
+#include <Serialisation/ISerialisable.hpp>
 
 #include <string>
 
 namespace MG3TR
 {
-    class Shader : public IJsonSerializeable
+    class Shader : public ISerialisable, public ILateBindable
     {
     private:
         TShaderID m_vertex_shader;
@@ -51,9 +52,9 @@ namespace MG3TR
         virtual void SetUniforms();
         virtual void BindAdditionals();
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
+        virtual void LateBind(Scene &scene) override;
 
     private:
         void Construct(const std::string &vertex_shader_path, const std::string &fragment_shader_path);

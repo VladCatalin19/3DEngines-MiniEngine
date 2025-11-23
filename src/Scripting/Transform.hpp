@@ -4,8 +4,8 @@
 #include <Math/Matrix4x4.hpp>
 #include <Math/Quaternion.hpp>
 #include <Math/Vector3.hpp>
-
-#include <Scene/IJsonSerializeable.hpp>
+#include <Scene/ILateBindable.hpp>
+#include <Serialisation/ISerialisable.hpp>
 #include <Utils/UIDGenerator.hpp>
 
 #include <cstddef>
@@ -16,7 +16,7 @@ namespace MG3TR
 {
     class GameObject;
 
-    class Transform : public IJsonSerializeable, public std::enable_shared_from_this<Transform>
+    class Transform : public std::enable_shared_from_this<Transform>, public ISerialisable, public ILateBindable
     {
     private:
         Vector3 m_local_position;
@@ -103,9 +103,9 @@ namespace MG3TR
         void RemoveChild(const std::shared_ptr<Transform> &child);
         void RemoveChild(const std::size_t position);
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
+        virtual void LateBind(Scene &scene) override;
 
     private:
         Matrix4x4 CalculateLocalToWorldModelMatrix() const;

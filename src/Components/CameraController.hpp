@@ -50,9 +50,8 @@ namespace MG3TR
         virtual void ParseInput(const Input &input) override;
         virtual void FrameUpdate(const float delta_time) override;
 
-        virtual nlohmann::json Serialize() const override;
-        virtual void Deserialize(const nlohmann::json &json) override;
-        virtual void LateBindAfterDeserialization(Scene &scene) override;
+        virtual void Serialise(ISerialiser &serialiser) override;
+        virtual void Deserialise(IDeserialiser &deserialiser) override;
 
     private:
         void UpdateMovement(const float delta_time);
