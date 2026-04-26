@@ -115,14 +115,13 @@ namespace MG3TR
         namespace Constants = MeshRendererSerialisationConstants;
 
         const TUID uid = GetUID();
-        const TUID camera_uid = m_camera.lock()->GetUID();
         const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
 
         serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
         serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
         serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, m_camera_uid);
         serialiser.SerialiseBool(Constants::k_use_frustum_culling_attribute, m_use_frustum_culling);
 
         serialiser.BeginSerialisingChild(Constants::k_mesh_attribute);

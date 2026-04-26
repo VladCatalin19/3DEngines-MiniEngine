@@ -11,6 +11,12 @@ This project is a framework made with OpenGL in C++23. Currently, it supports:
 * bounding sphere frustum culling
 * fully functional transform hierarchy
 
+Planned features:
+* GUI system
+* Physics and collisions
+* Shadow volumes
+* Volumetric fog
+
 ## Requirements
 ```console
 cmake >= 3.27
@@ -31,5 +37,5 @@ compiled on the host beforehand.
 
 ## Running
 ```console
-build/MG3TR
+$ build/MG3TR
 ```

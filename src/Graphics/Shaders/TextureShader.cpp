@@ -53,16 +53,14 @@ namespace MG3TR
         namespace Constants = TextureShaderSerialisationConstants;
 
         const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
-        const TUID camera_uid = m_camera.lock()->GetUID();
-        const TUID object_uid = m_object_transform.lock()->GetUID();
         const std::string &texture_path = m_texture->GetPathToFile();
         const std::string relative_texture_path = RemoveProjDirFromPath(texture_path);
 
         serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
         serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
-        serialiser.SerialiseUnsigned(Constants::k_object_transform_uid_attribute, object_uid);
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, m_camera_uid);
+        serialiser.SerialiseUnsigned(Constants::k_object_transform_uid_attribute, m_object_transform_uid);
         serialiser.SerialiseString(Constants::k_texture_path_attribute, relative_texture_path);
     }
 

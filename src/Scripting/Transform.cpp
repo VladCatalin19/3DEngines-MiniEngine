@@ -182,7 +182,7 @@ namespace MG3TR
     {
         Vector4 position(point, 1.0F);
         position = Matrix4x4::Inverse(GetWorldModelMatrix()) * position;
-        const  Vector3 local_space_position(position.x(), position.y(), position.z());
+        const Vector3 local_space_position(position.x(), position.y(), position.z());
 
         return local_space_position;
     }

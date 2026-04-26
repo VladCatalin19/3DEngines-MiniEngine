@@ -58,14 +58,12 @@ namespace MG3TR
         namespace Constants = FragmentNormalShaderSerialisationConstants;
         
         const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
-        const TUID camera_uid = m_camera.lock()->GetUID();
-        const TUID object_uid = m_object_transform.lock()->GetUID();
 
         serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
         serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
-        serialiser.SerialiseUnsigned(Constants::k_object_transform_uid_attribute, object_uid);
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, m_camera_uid);
+        serialiser.SerialiseUnsigned(Constants::k_object_transform_uid_attribute, m_object_transform_uid);
     }
 
     void FragmentNormalShader::Deserialise(IDeserialiser &deserialiser)

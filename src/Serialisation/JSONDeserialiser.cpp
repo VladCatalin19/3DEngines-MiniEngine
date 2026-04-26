@@ -154,14 +154,14 @@ namespace MG3TR
 
         if (stack_empty)
         {
-            throw ExceptionWithStacktrace("No child to end serialising!");
+            throw ExceptionWithStacktrace("No child to end deserialising!");
         }
 
         const auto node_info = m_previous_nodes_json.top();
 
         if (node_info.m_array_current_index != TNodeInformation::k_invalid_index)
         {
-            throw ExceptionWithStacktrace("Cannot end serialising child before ending serialising array!");
+            throw ExceptionWithStacktrace("Cannot end deserialising child before ending deserialising array!");
         }
 
         m_current_node_json = node_info.m_json_node;
@@ -192,7 +192,7 @@ namespace MG3TR
 
         if (stack_empty)
         {
-            throw ExceptionWithStacktrace("No child to end serialising!");
+            throw ExceptionWithStacktrace("No array to end deserialising!");
         }
 
         TNodeInformation &parent_node_info = m_previous_nodes_json.top();
@@ -202,14 +202,14 @@ namespace MG3TR
 
         if (!is_parent_array)
         {
-            throw ExceptionWithStacktrace("Cannot end serialising current array element! Not an array!");
+            throw ExceptionWithStacktrace("Cannot end deserialising current array element! Not an array!");
         }
 
         const int size = static_cast<int>(parent_json.size());
 
         if (parent_node_info.m_array_current_index >= size)
         {
-            throw ExceptionWithStacktrace("Cannot end serialising current array element! Cannot increment array past last element!");
+            throw ExceptionWithStacktrace("Cannot end deserialising current array element! Cannot increment array past last element!");
         }
         else if (parent_node_info.m_array_current_index == (size - 1))
         {
@@ -234,7 +234,7 @@ namespace MG3TR
 
         if (stack_empty)
         {
-            throw ExceptionWithStacktrace("No array to end serialising!");
+            throw ExceptionWithStacktrace("No array to end deserialising!");
         }
 
         const auto node_info = m_previous_nodes_json.top();

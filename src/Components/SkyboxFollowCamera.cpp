@@ -39,14 +39,13 @@ namespace MG3TR
         namespace Constants = SkyboxFollowCameraSerialisationConstants;
 
         const TUID uid = GetUID();
-        const TUID camera_uid = m_camera.lock()->GetUID();
         const ComponentType type = ComponentConstants::k_type_to_component.at(typeid(*this));
 
         serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_uid_attribute, uid);
         serialiser.SerialiseUnsigned(ComponentSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
         serialiser.SerialiseString(ComponentSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
 
-        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, camera_uid);
+        serialiser.SerialiseUnsigned(Constants::k_camera_uid_attribute, m_camera_uid);
     }
 
     void SkyboxFollowCamera::Deserialise(IDeserialiser &deserialiser)

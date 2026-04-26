@@ -24,7 +24,7 @@ namespace MG3TR::InputConstants
 
         { GLFW_KEY_0, Key::Zero },
         { GLFW_KEY_1, Key::One },
-        { GLFW_KEY_2, Key::Two},
+        { GLFW_KEY_2, Key::Two },
         { GLFW_KEY_3, Key::Three },
         { GLFW_KEY_4, Key::Four },
         { GLFW_KEY_5, Key::Five },
@@ -111,16 +111,16 @@ namespace MG3TR::InputConstants
         { GLFW_KEY_KP_5, Key::KeyPadFive },
         { GLFW_KEY_KP_6, Key::KeyPadSix },
         { GLFW_KEY_KP_7, Key::KeyPadSeven },
-        { GLFW_KEY_KP_8, Key::KeyPadEight},
+        { GLFW_KEY_KP_8, Key::KeyPadEight },
         { GLFW_KEY_KP_9, Key::KeyPadNine },
 
-        { GLFW_KEY_KP_DECIMAL, Key::KeyPadDecimal},
+        { GLFW_KEY_KP_DECIMAL, Key::KeyPadDecimal },
         { GLFW_KEY_KP_DIVIDE, Key::KeyPadDivide },
         { GLFW_KEY_KP_MULTIPLY, Key::KeyPadMultiply },
         { GLFW_KEY_KP_SUBTRACT, Key::KeyPadSubstract },
         { GLFW_KEY_KP_ADD, Key::KeyPadAdd },
         { GLFW_KEY_KP_ENTER, Key::KeyPadEnter },
-        { GLFW_KEY_KP_EQUAL, Key::KeyPadEqual},
+        { GLFW_KEY_KP_EQUAL, Key::KeyPadEqual },
     
         { GLFW_KEY_LEFT_SHIFT, Key::LeftShift },
         { GLFW_KEY_LEFT_CONTROL, Key::LeftControl },

@@ -167,7 +167,7 @@ namespace MG3TR
             m_current_node_json = nullptr;
 
             // Important note:
-            // If EndDeserialisingLastArray is not called immediately after this function ends,
+            // If EndSerialisingLastArray is not called immediately after this function ends,
             // this could lead to null pointer dereferencing! This is not the case with the current
             // implementation. For now, we leave it as is.
         }

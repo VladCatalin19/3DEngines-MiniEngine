@@ -59,6 +59,10 @@ namespace MG3TR
     {
         auto& api = GraphicsAPISingleton::GetInstance().GetGraphicsAPI();
 
+        if (m_ibo > 0)
+        {
+            api.DeleteIBO(m_ibo);
+        }
         if (m_vbo_uvs > 0)
         {
             api.DeleteVBO(m_vbo_uvs);

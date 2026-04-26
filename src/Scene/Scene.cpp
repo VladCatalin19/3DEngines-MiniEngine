@@ -201,11 +201,6 @@ namespace MG3TR
         deserialiser.EndDeserialisingLastChild();
 
         m_root_transform->LateBind(*this);
-
-        /*
-        m_root_transform->Deserialize(json);
-        m_root_transform->LateBindAfterDeserialization(*this);
-        */
     }
     
     void Scene::SaveToFile(const std::string &file_name) const

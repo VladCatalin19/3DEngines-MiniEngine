@@ -64,18 +64,18 @@ namespace MG3TR
 {
     void OpenGLAPI::Initialise(void *const load_process)
     {
-    const GLenum ret = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(load_process));
+        const GLenum ret = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(load_process));
 
-    const bool GLAD_init_successfully = (ret != 0);
-    if (!GLAD_init_successfully)
-    {
-        throw MG3TR::ExceptionWithStacktrace("Could not initialize GLAD.");
-    }
+        const bool GLAD_init_successfully = (ret != 0);
+        if (!GLAD_init_successfully)
+        {
+            throw MG3TR::ExceptionWithStacktrace("Could not initialize GLAD.");
+        }
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    glEnable(GL_CULL_FACE);  
-    glCullFace(GL_BACK);
+        glEnable(GL_DEPTH_TEST);
+        glDepthFunc(GL_LESS);
+        glEnable(GL_CULL_FACE);  
+        glCullFace(GL_BACK);
     }
 
     void OpenGLAPI::Finalise()
