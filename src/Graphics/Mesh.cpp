@@ -1,10 +1,10 @@
 #include "Mesh.hpp"
 
-#include <Constants/GraphicsConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
+#include <Graphics/GraphicsConstants.hpp>
 #include <Math/Matrix4x4.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 #include <Utils/ProjDirOperations.hpp>
 

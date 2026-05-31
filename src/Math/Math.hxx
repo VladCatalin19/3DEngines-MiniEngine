@@ -10,6 +10,8 @@
 
 namespace MG3TR::Math
 {
+    constexpr float k_epsilon = 0.001F;
+    
     template<std::floating_point TFloat>
     TFloat DegreesToRadians(const TFloat value);
 

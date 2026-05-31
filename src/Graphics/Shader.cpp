@@ -1,10 +1,10 @@
 #include "Shader.hpp"
 
-#include <Constants/SerialisationConstants.hpp>
-#include <Constants/ShaderConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
+#include <Graphics/Shaders/ShaderConstants.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 #include <Utils/ProjDirOperations.hpp>
 

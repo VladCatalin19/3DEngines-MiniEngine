@@ -1,18 +1,17 @@
 #include "TestMovement.hpp"
 
-#include <Constants/ComponentConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
-#include <Constants/MathConstants.hpp>
+#include <Components/ComponentConstants.hpp>
 #include <Math/Math.hxx>
 #include <Scripting/Transform.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 
 namespace MG3TR
 {
     TestMovement::TestMovement(const std::weak_ptr<GameObject> &game_object, const std::weak_ptr<Transform> &transform)
         : Component(game_object, transform),
-          m_initial_local_position(Vector3Constants::k_zero),
+          m_initial_local_position(Vector3::Zero()),
           m_total_time(0.0F)
     {
 

@@ -1,13 +1,13 @@
 #include "TestRotation.hpp"
 
-#include <Constants/ComponentConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
+#include <Components/ComponentConstants.hpp>
 #include <Math/Math.hxx>
 #include <Math/Vector3.hpp>
 #include <Math/Quaternion.hpp>
 #include <Scripting/Transform.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 
 namespace MG3TR
 {

@@ -1,10 +1,10 @@
 #ifndef MG3TR_SRC_WINDOW_INPUT_HPP_INCLUDED
 #define MG3TR_SRC_WINDOW_INPUT_HPP_INCLUDED
 
+#include "InputConstants.hpp"
 #include "Key.hpp"
 #include "MouseButton.hpp"
 
-#include <Constants/InputConstants.hpp>
 #include <Math/Vector2.hpp>
 
 #include <bitset>

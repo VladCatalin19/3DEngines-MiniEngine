@@ -1,12 +1,10 @@
 #include "MeshRenderer.hpp"
 
 #include <Components/Camera.hpp>
-#include <Constants/ComponentConstants.hpp>
-#include <Constants/ShaderConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
-#include <Constants/MathConstants.hpp>
+#include <Components/ComponentConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Graphics/Mesh.hpp>
+#include <Graphics/Shaders/ShaderConstants.hpp>
 #include <Graphics/Shader.hpp>
 #include <Graphics/ShaderType.hpp>
 #include <Math/Math.hxx>
@@ -19,6 +17,7 @@
 #include <Scripting/Transform.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 #include <Utils/TryCathRethrowStacktrace.hpp>
 

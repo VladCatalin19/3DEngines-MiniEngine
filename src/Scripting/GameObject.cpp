@@ -1,7 +1,7 @@
 #include "GameObject.hpp"
 
-#include <Constants/ComponentConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
+#include <Components/ComponentConstants.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>

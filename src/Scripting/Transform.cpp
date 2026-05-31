@@ -1,19 +1,18 @@
 #include "Transform.hpp"
 
-#include <Constants/SerialisationConstants.hpp>
-#include <Constants/MathConstants.hpp>
 #include <Math/Vector4.hpp>
 #include <Scripting/GameObject.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
 {
     Transform::Transform()
-        : m_local_position(Vector3Constants::k_zero),
-          m_local_rotation(QuaternionConstants::k_identity),
-          m_local_scale(Vector3Constants::k_one),
+        : m_local_position(Vector3::Zero()),
+          m_local_rotation(Quaternion::Identity()),
+          m_local_scale(Vector3::One()),
           m_parent(),
           m_game_object(nullptr),
           m_uid(s_uid_generator.GetNextUID())
@@ -115,19 +114,19 @@ namespace MG3TR
     
     Vector3 Transform::GetForwards() const
     {
-        const auto forwads = GetWorldRotation() * Vector3Constants::k_forwards;
+        const auto forwads = GetWorldRotation() * Vector3::Forwards();
         return forwads;
     }
 
     Vector3 Transform::GetRight() const
     {
-        const auto right = GetWorldRotation() * Vector3Constants::k_right;
+        const auto right = GetWorldRotation() * Vector3::Right();
         return right;
     }
 
     Vector3 Transform::GetUp() const
     {
-        const auto up = GetWorldRotation() * Vector3Constants::k_up;
+        const auto up = GetWorldRotation() * Vector3::Up();
         return up;
     }
 
@@ -414,7 +413,7 @@ namespace MG3TR
     
     Quaternion Transform::CalculateLocalToWorldRotation() const
     {
-        Quaternion q = QuaternionConstants::k_identity;
+        Quaternion q = Quaternion::Identity();
         
         auto parent = m_parent;
 
@@ -443,7 +442,7 @@ namespace MG3TR
     
     Vector3 Transform::CalculateLocalToWorldScale() const
     {
-        Vector3 scale = Vector3Constants::k_one;
+        Vector3 scale = Vector3::One();
 
         auto parent = m_parent;
 

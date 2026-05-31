@@ -2,12 +2,13 @@
 
 #include <glad/glad.h>
 
-#include <Constants/UtilsConstants.hpp>
 #include <Graphics/SubMesh.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 #include <iostream>
 #include <vector>
+
+static const unsigned k_max_GL_errors_depth_to_print = 10U;
 
 static const GLint k_internal_formats[] = { 0, GL_R8, GL_RG8, GL_RGB8, GL_RGBA8 };
 static const GLint k_pixel_format[] = { 0, GL_RED, GL_RG, GL_RGB, GL_RGBA };
@@ -39,14 +40,14 @@ static void PrintGLErrors(const char* const file, const int line)
         std::cerr << "OpenGL error: ";
     }
 
-    while ((current_error != GL_NO_ERROR) && (current_depth <= MG3TR::UtilsConstants::k_max_GL_errors_depth_to_print))
+    while ((current_error != GL_NO_ERROR) && (current_depth <= k_max_GL_errors_depth_to_print))
     {
         std::cerr << GetGLErrorString(current_error) << " ";
 
         current_error = glGetError();
 
         ++current_depth;
-        if (current_depth >= MG3TR::UtilsConstants::k_max_GL_errors_depth_to_print)
+        if (current_depth >= k_max_GL_errors_depth_to_print)
         {
             std::cerr << std::endl << "OpenGL max error depth reached. Not printing any errors.";
         }

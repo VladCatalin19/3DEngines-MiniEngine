@@ -1,5 +1,4 @@
-﻿#include <Constants/GraphicsConstants.hpp>
-#include <Components/Camera.hpp>
+﻿#include <Components/Camera.hpp>
 #include <Components/CameraController.hpp>
 #include <Components/MeshRenderer.hpp>
 #include <Components/SkyboxFollowCamera.hpp>
@@ -8,6 +7,7 @@
 
 #include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Graphics/API/OpenGLAPI.hpp>
+#include <Graphics/GraphicsConstants.hpp>
 #include <Graphics/Mesh.hpp>
 #include <Graphics/Shader.hpp>
 #include <Graphics/Shaders/FragmentNormalShader.hpp>

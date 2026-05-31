@@ -1,7 +1,7 @@
 #include "SubMesh.hpp"
 
-#include <Constants/GraphicsConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
+#include <Graphics/GraphicsConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 

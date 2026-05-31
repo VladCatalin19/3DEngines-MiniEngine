@@ -2,8 +2,8 @@
 #define M3GTR_SRC_MATH_TVECTOR4_HXX_INCLUDED
 
 #include "TVector3.hxx"
+#include "Math.hxx"
 
-#include <Constants/EpsilonConstant.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 #define GLM_FORCE_XYZW_ONLY 1
@@ -56,6 +56,9 @@ namespace MG3TR::MathInternal
 
         TInternalType* InternalDataPointer();
         const TInternalType* InternalDataPointer() const;
+
+        static TVector4<TInternalType> Zero();
+        static TVector4<TInternalType> One();
 
         TInternalType Distance(const TVector4<TInternalType> &v) const;
         static TInternalType Distance(const TVector4<TInternalType> &v1, const TVector4<TInternalType> &v2);
@@ -326,6 +329,20 @@ namespace MG3TR::MathInternal
     }
 
     template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> Zero()
+    {
+        const TVector4<TInternalType> vector(0.0F, 0.0F, 0.0F, 0.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> One()
+    {
+        const TVector4<TInternalType> vector(1.0F, 1.0F, 1.0F, 1.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
     TInternalType TVector4<TInternalType>::Distance(const TVector4<TInternalType> &v) const
     {
         static_assert(std::numeric_limits<TInternalType>::is_iec559, "'Distance' accepts only floating-point inputs");
@@ -416,7 +433,7 @@ namespace MG3TR::MathInternal
         static_assert(std::numeric_limits<TInternalType>::is_iec559, "'Normalize' accepts only floating-point inputs");
 
         const TInternalType length = glm::length(m_vec4);
-        if (length < k_epsilon)
+        if (length < Math::k_epsilon)
         {
             return *this;
         }
@@ -431,7 +448,7 @@ namespace MG3TR::MathInternal
         static_assert(std::numeric_limits<TInternalType>::is_iec559, "'Normalize' accepts only floating-point inputs");
 
         const TInternalType length = glm::length(v.m_vec4);
-        if (length < k_epsilon)
+        if (length < Math::k_epsilon)
         {
             return v;
         }

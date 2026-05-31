@@ -1,11 +1,11 @@
 #include "Window.hpp"
 
 #include "Input.hpp"
+#include "InputConstants.hpp"
 #include "MouseButton.hpp"
 
 #include <GLFW/glfw3.h>
 
-#include <Constants/InputConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
 #include <Scene/Scene.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>

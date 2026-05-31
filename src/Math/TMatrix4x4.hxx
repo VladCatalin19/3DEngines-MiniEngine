@@ -53,6 +53,8 @@ namespace MG3TR::MathInternal
         TInternalType* InternalDataPointer();
         const TInternalType* InternalDataPointer() const;
 
+        static TMatrix4x4<TInternalType> Eye();
+
         static TMatrix4x4<TInternalType> LookAt(const TVector3<TInternalType> &eye,
                                                 const TVector3<TInternalType> &center,
                                                 const TVector3<TInternalType> &up);
@@ -329,6 +331,13 @@ namespace MG3TR::MathInternal
     {
         const TInternalType * const ptr = glm::value_ptr(m_mat4x4);
         return ptr;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TMatrix4x4<TInternalType> TMatrix4x4<TInternalType>::Eye()
+    {
+        const TMatrix4x4<TInternalType> matrix(1.0F);
+        return matrix;
     }
 
     template<TNumericalConcept TInternalType>

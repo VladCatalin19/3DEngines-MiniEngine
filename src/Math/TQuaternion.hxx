@@ -28,7 +28,6 @@ namespace MG3TR::MathInternal
         TQuaternion();
         TQuaternion(const TInternalType s, const TVector3<TInternalType> &v);
         TQuaternion(const TInternalType w, TInternalType x, TInternalType y, TInternalType z);
-        // from and to must be normalized
         TQuaternion(const TVector3<TInternalType> &from, const TVector3<TInternalType> &to);
         TQuaternion(const TVector3<TInternalType> &euler_angles);
         static TQuaternion<TInternalType> FromAngleAxis(const TInternalType angle,
@@ -59,6 +58,8 @@ namespace MG3TR::MathInternal
 
         TQuaternion<TInternalType>& Set(const TInternalType w, const TInternalType x, const TInternalType y, const TInternalType z);
 
+        static TQuaternion<TInternalType> Identity();
+        
         TInternalType Angle() const;
         static TInternalType Angle(const TQuaternion<TInternalType> &q);
 
@@ -142,12 +143,11 @@ namespace MG3TR::MathInternal
 
     }
 
-    // from and to must be normalized
     template<TNumericalConcept TInternalType>
     TQuaternion<TInternalType>::TQuaternion(const TVector3<TInternalType> &from,
                                             const TVector3<TInternalType> &to)
-        : m_quat(glm::tvec3<TInternalType>(from.x(), from.y(), from.z()),
-                 glm::tvec3<TInternalType>(to.x(), to.y(), to.z()))
+        : m_quat(glm::normalize(glm::tvec3<TInternalType>(from.x(), from.y(), from.z())),
+                 glm::normalize(glm::tvec3<TInternalType>(to.x(), to.y(), to.z())))
     {
 
     }
@@ -303,6 +303,13 @@ namespace MG3TR::MathInternal
         m_quat.y = y;
         m_quat.z = z;
         return *this;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TQuaternion<TInternalType> TQuaternion<TInternalType>::Identity()
+    {
+        const TQuaternion<TInternalType> quaternion;
+        return quaternion;
     }
 
     template<TNumericalConcept TInternalType>

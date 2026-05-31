@@ -1,7 +1,6 @@
 #include "CameraController.hpp"
 
-#include <Constants/ComponentConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
+#include <Components/ComponentConstants.hpp>
 #include <Math/Quaternion.hpp>
 #include <Math/Math.hxx>
 #include <Scripting/GameObject.hpp>
@@ -9,6 +8,7 @@
 #include <Scripting/Transform.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Window/Input.hpp>
 
 namespace MG3TR

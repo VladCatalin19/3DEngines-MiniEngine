@@ -2,8 +2,8 @@
 #define M3GTR_SRC_MATH_TVECTOR3_HXX_INCLUDED
 
 #include "TNumericalConcept.hxx"
+#include "Math.hxx"
 
-#include <Constants/EpsilonConstant.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 #define GLM_FORCE_XYZW_ONLY 1
@@ -54,6 +54,15 @@ namespace MG3TR::MathInternal
 
         TInternalType* InternalDataPointer();
         const TInternalType* InternalDataPointer() const;
+
+        static TVector3<TInternalType> Zero();
+        static TVector3<TInternalType> One();
+        static TVector3<TInternalType> Up();
+        static TVector3<TInternalType> Down();
+        static TVector3<TInternalType> Left();
+        static TVector3<TInternalType> Right();
+        static TVector3<TInternalType> Forwards();
+        static TVector3<TInternalType> Backwards();
 
         TVector3<TInternalType> Cross(const TVector3<TInternalType> &v) const;
         static TVector3<TInternalType> Cross(const TVector3<TInternalType> &v1,
@@ -328,6 +337,62 @@ namespace MG3TR::MathInternal
     }
 
     template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Zero()
+    {
+        const TVector3<TInternalType> vector(0.0F, 0.0F, 0.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::One()
+    {
+        const TVector3<TInternalType> vector(1.0F, 1.0F, 1.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Up()
+    {
+        const TVector3<TInternalType> vector(0.0F, 1.0F, 0.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Down()
+    {
+        const TVector3<TInternalType> vector(0.0F, -1.0F, 0.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Left()
+    {
+        const TVector3<TInternalType> vector(1.0F, 0.0F, 0.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Right()
+    {
+        const TVector3<TInternalType> vector(-1.0F, 0.0F, 0.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Forwards()
+    {
+        const TVector3<TInternalType> vector(0.0F, 0.0F, 1.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
+    TVector3<TInternalType> TVector3<TInternalType>::Backwards()
+    {
+        const TVector3<TInternalType> vector(0.0F, 0.0F, -1.0F);
+        return vector;
+    }
+
+    template<TNumericalConcept TInternalType>
     TVector3<TInternalType> TVector3<TInternalType>::Cross(const TVector3<TInternalType> &v) const
     {
         static_assert(std::numeric_limits<TInternalType>::is_iec559, "'Cross' accepts only floating-point inputs");
@@ -438,7 +503,7 @@ namespace MG3TR::MathInternal
         static_assert(std::numeric_limits<TInternalType>::is_iec559, "'Normalize' accepts only floating-point inputs");
 
         const TInternalType length = glm::length(m_vec3);
-        if (length < k_epsilon)
+        if (length < Math::k_epsilon)
         {
             return *this;
         }
@@ -453,7 +518,7 @@ namespace MG3TR::MathInternal
         static_assert(std::numeric_limits<TInternalType>::is_iec559, "'Normalize' accepts only floating-point inputs");
 
         const TInternalType length = glm::length(v.m_vec3);
-        if (length < k_epsilon)
+        if (length < Math::k_epsilon)
         {
             return v;
         }

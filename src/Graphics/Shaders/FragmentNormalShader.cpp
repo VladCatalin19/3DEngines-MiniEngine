@@ -1,15 +1,15 @@
 #include "FragmentNormalShader.hpp"
 
 #include <Components/Camera.hpp>
-#include <Constants/GraphicsConstants.hpp>
-#include <Constants/SerialisationConstants.hpp>
-#include <Constants/ShaderConstants.hpp>
 #include <Graphics/API/GraphicsAPISingleton.hpp>
+#include <Graphics/GraphicsConstants.hpp>
+#include <Graphics/Shaders/ShaderConstants.hpp>
 #include <Math/Matrix4x4.hpp>
 #include <Scene/Scene.hpp>
 #include <Scripting/Transform.hpp>
 #include <Serialisation/IDeserialiser.hpp>
 #include <Serialisation/ISerialiser.hpp>
+#include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
 namespace MG3TR
