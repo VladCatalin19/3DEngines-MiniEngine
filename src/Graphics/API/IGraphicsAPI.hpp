@@ -8,6 +8,7 @@
 #include <Math/Vector4.hpp>
 #include <Math/Matrix4x4.hpp>
 
+#include <any>
 #include <string>
 
 namespace MG3TR
@@ -19,7 +20,7 @@ namespace MG3TR
     public:
         virtual ~IGraphicsAPI() = default;
 
-        virtual void Initialise(void *const load_process) = 0;
+        virtual void Initialise(const std::any& load_process) = 0;
         virtual void Finalise() = 0;
 
         virtual void SetDepthTest(const bool enable) = 0;

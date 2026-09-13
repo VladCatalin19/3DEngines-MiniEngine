@@ -106,7 +106,10 @@ namespace MG3TR
         m_window = OpenNewWindow(height, width, name);
         SetGLFWCallbacks(m_window);
 
-        api.Initialise(reinterpret_cast<void *>(glfwGetProcAddress));
+        auto load_process_pointer = reinterpret_cast<void* (*)(const char*)>(glfwGetProcAddress);
+        const std::any load_process = load_process_pointer;
+
+        api.Initialise(load_process);
 
         if (glfwRawMouseMotionSupported())
         {

@@ -5,6 +5,7 @@
 #include <Graphics/SubMesh.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
 
+#include <boost/core/demangle.hpp>
 #include <iostream>
 #include <vector>
 
@@ -63,9 +64,25 @@ static void PrintGLErrors(const char* const file, const int line)
 
 namespace MG3TR
 {
-    void OpenGLAPI::Initialise(void *const load_process)
+    void OpenGLAPI::Initialise(const std::any& load_process)
     {
-        const GLenum ret = gladLoadGLLoader(reinterpret_cast<GLADloadproc>(load_process));
+        GLADloadproc glad_load_process = nullptr;
+
+        try
+        {
+            glad_load_process = std::any_cast<GLADloadproc>(load_process);
+        }
+        catch (const std::exception& exception)
+        {
+            const std::string expected_type_name = boost::core::demangle(typeid(GLADloadproc).name());
+            const std::string actual_type_name = boost::core::demangle(load_process.type().name());
+            const std::string error_message = std::format("Could not convert load_process to GLADloadproc! Expected '{}', got '{}'.",
+                                                          expected_type_name, actual_type_name);
+
+            throw ExceptionWithStacktrace(error_message);
+        }
+
+        const GLenum ret = gladLoadGLLoader(glad_load_process);
 
         const bool GLAD_init_successfully = (ret != 0);
         if (!GLAD_init_successfully)

@@ -27,8 +27,6 @@ namespace MG3TR
         std::string AddResourceDirectoryToPath(const std::string &path);
         std::string RemoveResourceDirectoryFromPath(const std::string &path);
     };
-
-    
 }
 
 #endif // M3GTR_SRC_UTILS_RESOURCEMANAGER_HPP_INCLUDED

@@ -17,7 +17,7 @@ namespace MG3TR
         OpenGLAPI& operator=(const OpenGLAPI &) = delete;
         OpenGLAPI& operator=(OpenGLAPI &&) = delete;
 
-        virtual void Initialise(void *const load_process) override;
+        virtual void Initialise(const std::any& load_process) override;
         virtual void Finalise() override;
 
         virtual void SetDepthTest(const bool enable) override;
