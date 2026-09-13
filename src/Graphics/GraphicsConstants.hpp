@@ -14,23 +14,23 @@ namespace MG3TR
 
     namespace SceneConstants
     {
-        const std::string k_cube_path(MG3TR_ROOT_DIR "res/Models/Cube/cube.obj");
-        const std::string k_skybox_path(MG3TR_ROOT_DIR "res/Models/Skybox/skybox.obj");
-        const std::string k_creeper_path(MG3TR_ROOT_DIR "res/Models/Creeper/creeper.obj");
-        const std::string k_sphere_path(MG3TR_ROOT_DIR "res/Models/Sphere/sphere.obj");
-        const std::string k_map_path(MG3TR_ROOT_DIR "res/Models/MinecraftScene/Mineways2Skfb.obj");
+        const std::string k_cube_path("Models/Cube/cube.obj");
+        const std::string k_skybox_path("Models/Skybox/skybox.obj");
+        const std::string k_creeper_path("Models/Creeper/creeper.obj");
+        const std::string k_sphere_path("Models/Sphere/sphere.obj");
+        const std::string k_map_path("Models/MinecraftScene/Mineways2Skfb.obj");
     }
 
     namespace ShaderConstants
     {
-        const std::string k_fragment_normal_vertex_shader(MG3TR_ROOT_DIR "res/Shaders/FragmentNormal.vert");
-        const std::string k_fragment_normal_fragment_shader(MG3TR_ROOT_DIR "res/Shaders/FragmentNormal.frag");
+        const std::string k_fragment_normal_vertex_shader("Shaders/FragmentNormal.vert");
+        const std::string k_fragment_normal_fragment_shader("Shaders/FragmentNormal.frag");
 
-        const std::string k_texture_vertex_shader(MG3TR_ROOT_DIR "res/Shaders/Texture.vert");
-        const std::string k_texture_fragment_shader(MG3TR_ROOT_DIR "res/Shaders/Texture.frag");
+        const std::string k_texture_vertex_shader("Shaders/Texture.vert");
+        const std::string k_texture_fragment_shader("Shaders/Texture.frag");
 
-        const std::string k_texture_and_lighting_vertex_shader(MG3TR_ROOT_DIR "res/Shaders/TextureAndLighting.vert");
-        const std::string k_texture_and_lighting_fragment_shader(MG3TR_ROOT_DIR "res/Shaders/TextureAndLighting.frag");
+        const std::string k_texture_and_lighting_vertex_shader("Shaders/TextureAndLighting.vert");
+        const std::string k_texture_and_lighting_fragment_shader("Shaders/TextureAndLighting.frag");
     
         const std::string k_model_uniform_location("u_model");
         const std::string k_view_uniform_location("u_view");

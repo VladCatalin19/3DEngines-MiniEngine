@@ -11,23 +11,34 @@
 #include <Serialisation/ISerialiser.hpp>
 #include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
+#include <Utils/ResourceManager.hpp>
 
 namespace MG3TR
 {
     FragmentNormalShader::FragmentNormalShader()
-        : Shader(MG3TR::ShaderConstants::k_fragment_normal_vertex_shader,
-                 MG3TR::ShaderConstants::k_fragment_normal_fragment_shader)
+        : Shader()
     {
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
 
+        const std::string vertex_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_fragment_normal_vertex_shader);
+        const std::string fragment_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_fragment_normal_fragment_shader);
+
+        Shader::Construct(vertex_shader_path, fragment_shader_path);
     }
 
     FragmentNormalShader::FragmentNormalShader(const std::weak_ptr<Camera> &camera,
                                                const std::weak_ptr<Transform> &object_transform)
-        : Shader(MG3TR::ShaderConstants::k_fragment_normal_vertex_shader,
-                 MG3TR::ShaderConstants::k_fragment_normal_fragment_shader),
+        : Shader(),
           m_camera(camera),
           m_object_transform(object_transform)
     {
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
+
+        const std::string vertex_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_fragment_normal_vertex_shader);
+        const std::string fragment_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_fragment_normal_fragment_shader);
+
+        Shader::Construct(vertex_shader_path, fragment_shader_path);
+
         if (m_camera.lock() != nullptr)
         {
             m_camera_uid = camera.lock()->GetUID();

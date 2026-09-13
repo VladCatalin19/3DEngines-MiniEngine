@@ -11,28 +11,38 @@
 #include <Serialisation/ISerialiser.hpp>
 #include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/ProjDirOperations.hpp>
+#include <Utils/ResourceManager.hpp>
 
 namespace MG3TR
 {
     TextureAndLightingShader::TextureAndLightingShader()
-        : Shader(ShaderConstants::k_texture_and_lighting_vertex_shader, 
-                 ShaderConstants::k_texture_and_lighting_fragment_shader)
+        : Shader()
     {
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
 
+        const std::string vertex_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_texture_and_lighting_vertex_shader);
+        const std::string fragment_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_texture_and_lighting_fragment_shader);
+
+        Shader::Construct(vertex_shader_path, fragment_shader_path);
     }
 
     TextureAndLightingShader::TextureAndLightingShader(const std::weak_ptr<Camera> &camera,
                                                        const std::weak_ptr<Transform> &object_transform,
                                                        const std::shared_ptr<Texture> &texture,
                                                        const Vector3 &light_position)
-        : Shader(ShaderConstants::k_texture_and_lighting_vertex_shader, 
-                 ShaderConstants::k_texture_and_lighting_fragment_shader),
+        : Shader(),
           m_camera(camera),
           m_object_transform(object_transform),
           m_texture(texture),
           m_light_position(light_position)
     {
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
+
+        const std::string vertex_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_texture_and_lighting_vertex_shader);
+        const std::string fragment_shader_path = resource_manager.AddResourceDirectoryToPath(MG3TR::ShaderConstants::k_texture_and_lighting_fragment_shader);
+
+        Shader::Construct(vertex_shader_path, fragment_shader_path);
+        
         if (m_camera.lock() != nullptr)
         {
             m_camera_uid = camera.lock()->GetUID();
@@ -71,9 +81,10 @@ namespace MG3TR
 
         namespace Constants = TextureAndLightingShaderSerialisationConstants;
 
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
         const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
         const std::string &texture_path = m_texture->GetPathToFile();
-        const std::string relative_texture_path = RemoveProjDirFromPath(texture_path);
+        const std::string relative_texture_path = resource_manager.RemoveResourceDirectoryFromPath(texture_path);
 
         serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
         serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
@@ -90,12 +101,13 @@ namespace MG3TR
 
         namespace Constants = TextureAndLightingShaderSerialisationConstants;
 
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
         m_camera_uid = deserialiser.DeserialiseUnsigned(Constants::k_camera_uid_attribute);
         m_object_transform_uid = deserialiser.DeserialiseUnsigned(Constants::k_object_transform_uid_attribute);
         m_light_position = deserialiser.DeserialiseVector3(Constants::k_light_position_attribute);
 
         const std::string relative_texture_path = deserialiser.DeserialiseString(Constants::k_texture_path_attribute);
-        const std::string texture_path = AddProjDirToPath(relative_texture_path);
+        const std::string texture_path = resource_manager.AddResourceDirectoryToPath(relative_texture_path);
         m_texture = std::make_shared<Texture>(texture_path);
     }
 

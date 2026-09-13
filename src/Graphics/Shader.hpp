@@ -56,7 +56,7 @@ namespace MG3TR
         virtual void Deserialise(IDeserialiser &deserialiser) override;
         virtual void LateBind(Scene &scene) override;
 
-    private:
+    protected:
         void Construct(const std::string &vertex_shader_path, const std::string &fragment_shader_path);
         void Construct(const std::string &vertex_shader_path, const std::string &geometry_shader_path,
                        const std::string &fragment_shader_path);

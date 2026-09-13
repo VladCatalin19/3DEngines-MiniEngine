@@ -9,7 +9,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_compile_definitions(GLFW_INCLUDE_NONE)
-add_compile_definitions(MG3TR_ROOT_DIR=\"${CMAKE_CURRENT_LIST_DIR}/\")
 
 include_directories("inc")
 include_directories("src")

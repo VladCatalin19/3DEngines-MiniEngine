@@ -22,11 +22,14 @@
 #include <Scripting/GameObject.hpp>
 #include <Scripting/Transform.hpp>
 
+#include <Utils/ResourceManager.hpp>
+
 #include <Window/Window.hpp>
 
+#include <iostream>
 #include <memory>
 
-#define BUILD_SCENE_INSTEAD_OF_READING true
+#define BUILD_SCENE_INSTEAD_OF_READING false
 
 #if BUILD_SCENE_INSTEAD_OF_READING
 
@@ -56,6 +59,7 @@ static std::shared_ptr<MG3TR::Camera> CreateCameraAndAddItToScene(MG3TR::Scene &
 static std::shared_ptr<MG3TR::GameObject> CreateRotatingCubeAndAddItToScene(MG3TR::Scene &scene,
                                                                             std::shared_ptr<MG3TR::Camera> &camera)
 {
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
     auto rotating_cube_game_object = MG3TR::GameObject::Create("Rotating Cube");
     auto rotating_cube_transform = MG3TR::Transform::Create();
     rotating_cube_game_object->SetTransform(rotating_cube_transform);
@@ -66,7 +70,8 @@ static std::shared_ptr<MG3TR::GameObject> CreateRotatingCubeAndAddItToScene(MG3T
     rotating_cube_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 90.0_rad, 0.0F } ));
     rotating_cube_transform->SetWorldScale( { 2.0F, 2.0F, 2.0F } );
 
-    auto rotating_cube_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_cube_path);
+    auto rotating_cube_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_cube_path);
+    auto rotating_cube_mesh = std::make_shared<MG3TR::Mesh>(rotating_cube_mesh_path);
     auto rotating_cube_shader = std::make_shared<MG3TR::FragmentNormalShader>(camera, rotating_cube_transform);
 
     auto rotating_cube_mesh_renderer = std::make_shared<MG3TR::MeshRenderer>(rotating_cube_game_object, rotating_cube_transform,
@@ -84,6 +89,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateRotatingCubeAndAddItToScene(MG3T
 static std::shared_ptr<MG3TR::GameObject> CreateSecondRotatingCubeAndAddItAsChildToTheFirstCube(std::shared_ptr<MG3TR::Camera> &camera,
                                                                                                 std::shared_ptr<MG3TR::GameObject> &rotating_cube_game_object)
 {
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
     auto second_rotating_cube_game_object = MG3TR::GameObject::Create("Second Rotating Cube");
     auto second_rotating_cube_transform = MG3TR::Transform::Create();
     second_rotating_cube_game_object->SetTransform(second_rotating_cube_transform);
@@ -94,7 +100,8 @@ static std::shared_ptr<MG3TR::GameObject> CreateSecondRotatingCubeAndAddItAsChil
     second_rotating_cube_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 90.0_rad, 0.0F } ));
     second_rotating_cube_transform->SetWorldScale( { 0.5F, 0.5F, 0.5F } );
 
-    auto second_rotating_cube_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_cube_path);
+    auto second_rotating_cube_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_cube_path);
+    auto second_rotating_cube_mesh = std::make_shared<MG3TR::Mesh>(second_rotating_cube_mesh_path);
     auto second_rotating_cube_shader = std::make_shared<MG3TR::FragmentNormalShader>(camera, second_rotating_cube_transform);
 
     auto second_rotating_cube_mesh_renderer = std::make_shared<MG3TR::MeshRenderer>(second_rotating_cube_game_object, second_rotating_cube_transform,
@@ -111,6 +118,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateSecondRotatingCubeAndAddItAsChil
 
 static std::shared_ptr<MG3TR::GameObject> CreateSkyBox(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
     auto skybox_game_object = MG3TR::GameObject::Create("Skybox");
     auto skybox_transform = MG3TR::Transform::Create();
     skybox_game_object->SetTransform(skybox_transform);
@@ -121,7 +129,8 @@ static std::shared_ptr<MG3TR::GameObject> CreateSkyBox(MG3TR::Scene &scene, std:
     skybox_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 180.0_rad, 0.0F } ));
     skybox_transform->SetWorldScale( { 150.0F, 150.0F, 150.0F } );
 
-    auto skybox_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_skybox_path);
+    auto skybox_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_skybox_path);
+    auto skybox_mesh = std::make_shared<MG3TR::Mesh>(skybox_mesh_path);
     auto skybox_texture = skybox_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto skybox_shader = std::make_shared<MG3TR::TextureShader>(camera, skybox_transform, skybox_texture);
 
@@ -141,6 +150,7 @@ static const MG3TR::Vector3 k_light_position(1'000.0F, 1'000.0F, 1'000.0F);
 
 static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
     auto creeper_game_object = MG3TR::GameObject::Create("Creeper");
     auto creeper_transform = MG3TR::Transform::Create();
     creeper_game_object->SetTransform(creeper_transform);
@@ -151,7 +161,8 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
     creeper_transform->SetWorldRotation(MG3TR::Quaternion( {0.0F, 180.0_rad, 0.0F} ));
     creeper_transform->SetWorldScale( { 2.0F, 2.0F, 2.0F } );
 
-    auto creeper_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_creeper_path);
+    auto creeper_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_creeper_path);
+    auto creeper_mesh = std::make_shared<MG3TR::Mesh>(creeper_mesh_path);
     auto creeper_texture = creeper_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto creeper_shader = std::make_shared<MG3TR::TextureAndLightingShader>(camera, creeper_transform,
                                                                             creeper_texture, k_light_position);
@@ -172,7 +183,8 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
     sphere_transform->SetWorldPosition(creeper_transform->TransformPointToWorldSpace(creeper_mesh_renderer->GetBoundingSphere().GetCenter()));
     sphere_transform->SetWorldScale(creeper_transform->GetWorldScale() * creeper_mesh_renderer->GetBoundingSphere().GetRadius());
 
-    auto sphere_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_sphere_path);
+    auto sphere_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_sphere_path);
+    auto sphere_mesh = std::make_shared<MG3TR::Mesh>(sphere_mesh_path);
     auto sphere_shader = std::make_shared<MG3TR::FragmentNormalShader>(camera, sphere_transform);
 
     auto sphere_mesh_renderer = std::make_shared<MG3TR::MeshRenderer>(sphere_game_object, sphere_transform,
@@ -186,6 +198,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateCreeper(MG3TR::Scene &scene, std
 
 static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
     auto map_game_object = MG3TR::GameObject::Create("Map");
     auto map_transform = MG3TR::Transform::Create();
     map_game_object->SetTransform(map_transform);
@@ -196,7 +209,8 @@ static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::sh
     map_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 90.0_rad, 0.0F } ));
     map_transform->SetWorldScale( { 30.0F, 30.0F, 30.0F } );
 
-    auto map_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_map_path);
+    auto map_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_map_path);
+    auto map_mesh = std::make_shared<MG3TR::Mesh>(map_mesh_path);
     auto map_texture = map_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto map_shader = std::make_shared<MG3TR::TextureAndLightingShader>(camera, map_transform, map_texture, k_light_position);
 
@@ -210,6 +224,7 @@ static std::shared_ptr<MG3TR::GameObject> CreateMap(MG3TR::Scene &scene, std::sh
 
 static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std::shared_ptr<MG3TR::Camera> &camera)
 {
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
     auto planet_game_object = MG3TR::GameObject::Create("Planet");
     auto planet_transform = MG3TR::Transform::Create();
     planet_game_object->SetTransform(planet_transform);
@@ -220,7 +235,8 @@ static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std:
     planet_transform->SetWorldRotation(MG3TR::Quaternion( { 0.0F, 0.0F, 0.0F } ));
     planet_transform->SetWorldScale( { 1.0F, 1.0F, 1.0F } );
 
-    auto planet_mesh = std::make_shared<MG3TR::Mesh>(MG3TR::SceneConstants::k_sphere_path);
+    auto planet_mesh_path = resource_manager.AddResourceDirectoryToPath(MG3TR::SceneConstants::k_sphere_path);
+    auto planet_mesh = std::make_shared<MG3TR::Mesh>(planet_mesh_path);
     auto planet_texture = planet_mesh->GetMaterials().begin()->m_diffuse_texture;
     auto planet_shader = std::make_shared<MG3TR::TextureAndLightingShader>(camera, planet_transform,
                                                                            planet_texture, k_light_position);
@@ -233,8 +249,19 @@ static std::shared_ptr<MG3TR::GameObject> CreatePlanet(MG3TR::Scene &scene, std:
 }
 #endif
 
-int main()
+int main(const int argument_count, const char *const *const arguments)
 {
+    if (argument_count != 2)
+    {
+        std::cout << "Invalid number of arguments! Must be 1 (the path to the res directory)." << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
+    auto& resource_manager = MG3TR::ResourceManager::GetInstance();
+    const std::string resource_directory = arguments[1];
+
+    resource_manager.SetResourceDirectoryPath(resource_directory);
+
     auto opengl_api = std::make_unique<MG3TR::OpenGLAPI>();
     auto& api_instance = MG3TR::GraphicsAPISingleton::GetInstance();
 
@@ -254,10 +281,13 @@ int main()
         (void)CreateSkyBox(scene_ref, camera);
         (void)CreatePlanet(scene_ref, camera);
 
-        scene_ref.SaveToFile(MG3TR_ROOT_DIR "res/Scenes/scene1.json");
+        const std::string absolute_path = resource_manager.AddResourceDirectoryToPath("Scenes/scene1.json");
+        scene_ref.SaveToFile(absolute_path);
 #   else
-        scene_ref.LoadFromFile(MG3TR_ROOT_DIR "res/Scenes/scene1.json");
-        scene_ref.SaveToFile(MG3TR_ROOT_DIR "res/Scenes/scene2.json");
+        const std::string load_scene_absolute_path = resource_manager.AddResourceDirectoryToPath("Scenes/scene1.json");
+        const std::string save_scene_absolute_path = resource_manager.AddResourceDirectoryToPath("Scenes/scene2.json");
+        scene_ref.LoadFromFile(load_scene_absolute_path);
+        scene_ref.SaveToFile(save_scene_absolute_path);
 #   endif
 
     window.SetScene(std::move(scene));

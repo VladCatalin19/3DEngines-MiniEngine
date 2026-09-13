@@ -6,7 +6,7 @@
 #include <Serialisation/ISerialiser.hpp>
 #include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/ProjDirOperations.hpp>
+#include <Utils/ResourceManager.hpp>
 
 #include <fstream>
 #include <iterator>
@@ -125,9 +125,10 @@ namespace MG3TR
     {
         namespace Constants = ShaderSerialisationConstants;
 
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
         const ShaderType type = ShaderConstants::k_type_to_shader.at(typeid(*this));
-        const std::string relative_vertex_shader_path = RemoveProjDirFromPath(m_vertex_shader_path);
-        const std::string relative_fragment_shader_path = RemoveProjDirFromPath(m_fragment_shader_path);
+        const std::string relative_vertex_shader_path = resource_manager.RemoveResourceDirectoryFromPath(m_vertex_shader_path);
+        const std::string relative_fragment_shader_path = resource_manager.RemoveResourceDirectoryFromPath(m_fragment_shader_path);
 
         serialiser.SerialiseUnsigned(ShaderSerialisationConstants::k_type_attribute, static_cast<unsigned long long>(type));
         serialiser.SerialiseString(ShaderSerialisationConstants::k_type_name_attribute, Constants::k_type_name_value);
@@ -138,7 +139,7 @@ namespace MG3TR
         const bool has_geometry_shader = !m_geometry_shader_path.empty();
         if (has_geometry_shader)
         {
-            const std::string relative_geometry_shader_path = RemoveProjDirFromPath(m_geometry_shader_path);
+            const std::string relative_geometry_shader_path = resource_manager.RemoveResourceDirectoryFromPath(m_geometry_shader_path);
             serialiser.SerialiseString(Constants::k_geometry_shader_attribute, relative_geometry_shader_path);
         }
     }
@@ -147,17 +148,18 @@ namespace MG3TR
     {
         namespace Constants = ShaderSerialisationConstants;
 
+        auto& resource_manager = MG3TR::ResourceManager::GetInstance();
         const std::string relative_vertex_shader_path = deserialiser.DeserialiseString(Constants::k_vertex_shader_attribute);
         const std::string relative_fragment_shader_path = deserialiser.DeserialiseString(Constants::k_fragment_shader_attribute);
 
-        const std::string vertex_shader_path = AddProjDirToPath(relative_vertex_shader_path);
-        const std::string fragment_shader_path = AddProjDirToPath(relative_fragment_shader_path);
+        const std::string vertex_shader_path = resource_manager.AddResourceDirectoryToPath(relative_vertex_shader_path);
+        const std::string fragment_shader_path = resource_manager.AddResourceDirectoryToPath(relative_fragment_shader_path);
 
         const bool has_geometry_shader = deserialiser.ContainsField(Constants::k_geometry_shader_attribute);
         if (has_geometry_shader)
         {
             const std::string relative_geometry_shader_path = deserialiser.DeserialiseString(Constants::k_geometry_shader_attribute);
-            const std::string geometry_shader_path = AddProjDirToPath(relative_geometry_shader_path);
+            const std::string geometry_shader_path = resource_manager.AddResourceDirectoryToPath(relative_geometry_shader_path);
 
             Construct(vertex_shader_path, geometry_shader_path, fragment_shader_path);
         }

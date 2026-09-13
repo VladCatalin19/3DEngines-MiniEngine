@@ -6,7 +6,7 @@
 #include <Serialisation/ISerialiser.hpp>
 #include <Serialisation/SerialisationConstants.hpp>
 #include <Utils/ExceptionWithStacktrace.hpp>
-#include <Utils/ProjDirOperations.hpp>
+#include <Utils/ResourceManager.hpp>
 
 #include <assimp/Importer.hpp>
 #include <assimp/material.h>
@@ -157,7 +157,10 @@ static auto ConvertAssimpMaterialsToMeshMaterials(const aiScene &scene)
                     throw MG3TR::ExceptionWithStacktrace("Could not get difuse texture.");
                 }
     
-                std::string absolute_path = std::format("{}{}", MG3TR_ROOT_DIR, path.C_Str());
+                auto& resource_manager = MG3TR::ResourceManager::GetInstance();
+                const std::string relative_path = path.C_Str();
+                const std::string absolute_path = resource_manager.AddResourceDirectoryToPath(relative_path);
+
                 material.m_diffuse_texture = std::make_shared<MG3TR::Texture>(absolute_path);
     
                 materials.push_back(material);
@@ -223,10 +226,12 @@ namespace MG3TR
     {
         namespace Constants = MeshSerialisationConstants;
 
+        auto& resource_manager = ResourceManager::GetInstance();
         const bool path_empty = m_path_to_file.empty();
+    
         if (!path_empty)
         {
-            const std::string relative_path = RemoveProjDirFromPath(m_path_to_file);
+            const std::string relative_path = resource_manager.RemoveResourceDirectoryFromPath(m_path_to_file);
             serialiser.SerialiseString(Constants::k_path_to_file_attribute, relative_path);
         }
         else
@@ -240,11 +245,13 @@ namespace MG3TR
     {
         namespace Constants = MeshSerialisationConstants;
 
+        auto& resource_manager = ResourceManager::GetInstance();
         const bool has_path = deserialiser.ContainsField(Constants::k_path_to_file_attribute);
+
         if (has_path)
         {
             const std::string relative_path = deserialiser.DeserialiseString(Constants::k_path_to_file_attribute);
-            const std::string path = AddProjDirToPath(relative_path);
+            const std::string path = resource_manager.AddResourceDirectoryToPath(relative_path);
             Construct(path);
         }
         else

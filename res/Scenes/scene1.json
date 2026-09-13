@@ -13,9 +13,9 @@
                                     "type": 0,
                                     "type name": "camera",
                                     "uid": 0,
-                                    "xmax": 4.484155085839415e-44,
-                                    "xmin": 0.0,
-                                    "ymax": 3572.767333984375,
+                                    "xmax": 1.4573504028978098e-43,
+                                    "xmin": 7.618455152798943e+31,
+                                    "ymax": 3.363116314379561e-43,
                                     "ymin": 0.0,
                                     "zfar": 300.0,
                                     "znear": 0.0010000000474974513
@@ -65,15 +65,15 @@
                                             "component": {
                                                 "camera uid": 0,
                                                 "mesh": {
-                                                    "path to file": "res/Models/Cube/cube.obj"
+                                                    "path to file": "Models/Cube/cube.obj"
                                                 },
                                                 "shader": {
                                                     "camera uid": 0,
-                                                    "fragment shader": "res/Shaders/FragmentNormal.frag",
+                                                    "fragment shader": "Shaders/FragmentNormal.frag",
                                                     "object transform uid": 3,
                                                     "type": 1,
                                                     "type name": "fragment normal shader",
-                                                    "vertex shader": "res/Shaders/FragmentNormal.vert"
+                                                    "vertex shader": "Shaders/FragmentNormal.vert"
                                                 },
                                                 "type": 2,
                                                 "type name": "mesh renderer",
@@ -118,15 +118,15 @@
                                 "component": {
                                     "camera uid": 0,
                                     "mesh": {
-                                        "path to file": "res/Models/Cube/cube.obj"
+                                        "path to file": "Models/Cube/cube.obj"
                                     },
                                     "shader": {
                                         "camera uid": 0,
-                                        "fragment shader": "res/Shaders/FragmentNormal.frag",
+                                        "fragment shader": "Shaders/FragmentNormal.frag",
                                         "object transform uid": 2,
                                         "type": 1,
                                         "type name": "fragment normal shader",
-                                        "vertex shader": "res/Shaders/FragmentNormal.vert"
+                                        "vertex shader": "Shaders/FragmentNormal.vert"
                                     },
                                     "type": 2,
                                     "type name": "mesh renderer",
@@ -175,15 +175,15 @@
                                             "component": {
                                                 "camera uid": 0,
                                                 "mesh": {
-                                                    "path to file": "res/Models/Sphere/sphere.obj"
+                                                    "path to file": "Models/Sphere/sphere.obj"
                                                 },
                                                 "shader": {
                                                     "camera uid": 0,
-                                                    "fragment shader": "res/Shaders/FragmentNormal.frag",
+                                                    "fragment shader": "Shaders/FragmentNormal.frag",
                                                     "object transform uid": 5,
                                                     "type": 1,
                                                     "type name": "fragment normal shader",
-                                                    "vertex shader": "res/Shaders/FragmentNormal.vert"
+                                                    "vertex shader": "Shaders/FragmentNormal.vert"
                                                 },
                                                 "type": 2,
                                                 "type name": "mesh renderer",
@@ -221,21 +221,21 @@
                                 "component": {
                                     "camera uid": 0,
                                     "mesh": {
-                                        "path to file": "res/Models/Creeper/creeper.obj"
+                                        "path to file": "Models/Creeper/creeper.obj"
                                     },
                                     "shader": {
                                         "camera uid": 0,
-                                        "fragment shader": "res/Shaders/TextureAndLighting.frag",
+                                        "fragment shader": "Shaders/TextureAndLighting.frag",
                                         "light position": [
                                             1000.0,
                                             1000.0,
                                             1000.0
                                         ],
                                         "object transform uid": 4,
-                                        "texture path": "res/Models/Creeper/creeper.png",
+                                        "texture path": "Models/Creeper/creeper.png",
                                         "type": 2,
                                         "type name": "texture and lighting shader",
-                                        "vertex shader": "res/Shaders/TextureAndLighting.vert"
+                                        "vertex shader": "Shaders/TextureAndLighting.vert"
                                     },
                                     "type": 2,
                                     "type name": "mesh renderer",
@@ -274,21 +274,21 @@
                                 "component": {
                                     "camera uid": 0,
                                     "mesh": {
-                                        "path to file": "res/Models/MinecraftScene/Mineways2Skfb.obj"
+                                        "path to file": "Models/MinecraftScene/Mineways2Skfb.obj"
                                     },
                                     "shader": {
                                         "camera uid": 0,
-                                        "fragment shader": "res/Shaders/TextureAndLighting.frag",
+                                        "fragment shader": "Shaders/TextureAndLighting.frag",
                                         "light position": [
                                             1000.0,
                                             1000.0,
                                             1000.0
                                         ],
                                         "object transform uid": 6,
-                                        "texture path": "res/Models/MinecraftScene/Mineways2Skfb-RGBA.png",
+                                        "texture path": "Models/MinecraftScene/Mineways2Skfb-RGBA.png",
                                         "type": 2,
                                         "type name": "texture and lighting shader",
-                                        "vertex shader": "res/Shaders/TextureAndLighting.vert"
+                                        "vertex shader": "Shaders/TextureAndLighting.vert"
                                     },
                                     "type": 2,
                                     "type name": "mesh renderer",
@@ -327,16 +327,16 @@
                                 "component": {
                                     "camera uid": 0,
                                     "mesh": {
-                                        "path to file": "res/Models/Skybox/skybox.obj"
+                                        "path to file": "Models/Skybox/skybox.obj"
                                     },
                                     "shader": {
                                         "camera uid": 0,
-                                        "fragment shader": "res/Shaders/Texture.frag",
+                                        "fragment shader": "Shaders/Texture.frag",
                                         "object transform uid": 7,
-                                        "texture path": "res/Models/Skybox/skybox.png",
+                                        "texture path": "Models/Skybox/skybox.png",
                                         "type": 3,
                                         "type name": "texture shader",
-                                        "vertex shader": "res/Shaders/Texture.vert"
+                                        "vertex shader": "Shaders/Texture.vert"
                                     },
                                     "type": 2,
                                     "type name": "mesh renderer",
@@ -383,21 +383,21 @@
                                 "component": {
                                     "camera uid": 0,
                                     "mesh": {
-                                        "path to file": "res/Models/Sphere/sphere.obj"
+                                        "path to file": "Models/Sphere/sphere.obj"
                                     },
                                     "shader": {
                                         "camera uid": 0,
-                                        "fragment shader": "res/Shaders/TextureAndLighting.frag",
+                                        "fragment shader": "Shaders/TextureAndLighting.frag",
                                         "light position": [
                                             1000.0,
                                             1000.0,
                                             1000.0
                                         ],
                                         "object transform uid": 8,
-                                        "texture path": "res/Models/Sphere/planet.png",
+                                        "texture path": "Models/Sphere/planet.png",
                                         "type": 2,
                                         "type name": "texture and lighting shader",
-                                        "vertex shader": "res/Shaders/TextureAndLighting.vert"
+                                        "vertex shader": "Shaders/TextureAndLighting.vert"
                                     },
                                     "type": 2,
                                     "type name": "mesh renderer",
