@@ -37,5 +37,5 @@ compiled on the host beforehand.
 
 ## Running
 ```console
-$ build/MG3TR
+$ build/MG3TR <<path to res directory>>
 ```
